@@ -4,7 +4,9 @@ Dependencies: keepercommander, secure_delete
 
 Environment variables & defaults
 
-TODO: TOTP migration
+TODO: 
+ - Shared folders (hoo boy)
+ - TOTP migration
 
 ```text
 KEEPER_SERVER       https://keepersecurity.eu/api/v2/
