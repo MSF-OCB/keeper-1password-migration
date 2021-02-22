@@ -25,7 +25,7 @@ import getpass, json, os, re, subprocess
 
 KEEPER_SERVER = os.getenv("KEEPER_API_URL", default="https://keepersecurity.eu/api/v2/")
 OP_SERVER = os.getenv("ONEPASS_SQERVER", default="my.1password.com")
-TMPDIR = os.getenv("TMP", os.getenv("TMPDIR", default="my.1password.com"))
+TMPDIR = os.getenv("TMP", os.getenv("TMPDIR"))
 OP_EXE = os.getenv("OP_EXE", default="D:\\1password\\op.exe")
 
 kp_params = KeeperParams()
@@ -35,11 +35,14 @@ credentials = {}
 def process_folder(op_user, uid, parents=[]) :
 
     folder = kp_params.folder_cache[uid];
+    
+    if(folder.type != "user_folder") :
+        return
 
     our_parents = parents.copy()
 
     our_parents.append(folder.name)
-    
+
     for uid in kp_params.subfolder_record_cache[uid]:
         r = api.get_record(kp_params, uid)
 
