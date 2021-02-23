@@ -24,89 +24,111 @@ from subprocess import run, Popen, PIPE
 import getpass, json, os, re, subprocess
 
 KEEPER_SERVER = os.getenv("KEEPER_API_URL", default="https://keepersecurity.eu/api/v2/")
-OP_SERVER = os.getenv("ONEPASS_SQERVER", default="my.1password.com")
+OP_SERVER = os.getenv("ONEPASS_SERVER", default="msfocb.1password.eu")
 TMPDIR = os.getenv("TMP", os.getenv("TMPDIR"))
 OP_EXE = os.getenv("OP_EXE", default="D:\\1password\\op.exe")
+
+MIGRATE_SHARED = True
 
 kp_params = KeeperParams()
 
 credentials = {}
 
-def process_folder(op_user, uid, parents=[]) :
+def process_folder_record(op_user, our_parents, record_uid) :
 
-    folder = kp_params.folder_cache[uid];
-    
-    if(folder.type != "user_folder") :
+    r = api.get_record(kp_params, record_uid)
+
+    if(r.totp != None) : 
+        print("******************************* HASTOTP, not done yet")
+        print(str(r.totp))
+
+    if not r.record_uid in credentials :
+        oneP = {
+            "fields": [
+                {
+                    "designation": "username",
+                    "name": "username",
+                    "type": "T",
+                    "value": r.login
+                },
+                {
+                    "designation": "password",
+                    "name": "password",
+                    "type": "P",
+                    "value": r.password
+                },
+            ],
+            "sections": []
+        }
+
+        if(r.notes): oneP["notesPlain"] = r.notes
+
+        if(r.custom_fields):
+            oneP["sections"].append(
+                {
+                    "title": "Custom fields",
+                    "fields": []
+                }
+            )
+
+            for custom_field in r.custom_fields:
+                oneP["sections"][0]["fields"].append({
+                    "k": "string",
+                    "t": custom_field["name"],
+                    "v": custom_field["value"]
+                })
+
+        if r.title == "Benuc035" :
+            print("*******************")
+            print(json.dumps(oneP))
+            print("*******************")
+
+        credentials[r.record_uid] = {"json": oneP, "title": r.title, "url": r.login_url, "tags": []}
+
+    credentials[r.record_uid]["tags"].append("/".join(our_parents ))
+
+    print("r.attachments="+str(r.attachments))
+
+    if(r.attachments) :
+
+        dir = os.path.sep.join([TMPDIR, "onepassword-migration-downloads", op_user, r.record_uid])
+
+        if not os.path.exists(dir): 
+            os.makedirs(dir)
+
+        os.chdir(dir)
+
+        dl = RecordDownloadAttachmentCommand()
+
+        kwargs = {'record': r.record_uid}
+
+        dl.execute(kp_params, **kwargs)
+
+        credentials[r.record_uid]["docs"] = dir
+
+
+def process_folder_records(op_user, our_parents, folder_uid) :
+
+    if not folder_uid in kp_params.subfolder_record_cache:
         return
 
+    for record_uid in kp_params.subfolder_record_cache[folder_uid]:
+        process_folder_record(op_user, our_parents, record_uid)
+
+def process_folder(op_user, folder_uid, parents=[]) :
+
+    folder = kp_params.folder_cache[folder_uid];
+
+    if(folder.type != "user_folder" && not MIGRATE_SHARED) :
+        return
+    
     our_parents = parents.copy()
 
     our_parents.append(folder.name)
 
-    for uid in kp_params.subfolder_record_cache[uid]:
-        r = api.get_record(kp_params, uid)
-
-        if(r.totp != None) : 
-            print("******************************* HASTOTP, not done yet")
-            print(str(r.totp))
-
-        if not r.record_uid in credentials :
-            oneP = {
-                "fields": [
-                    {
-                        "designation": "username",
-                        "name": "username",
-                        "type": "T",
-                        "value": r.login
-                    },
-                    {
-                        "designation": "password",
-                        "name": "password",
-                        "type": "P",
-                        "value": r.password
-                    },
-                ],
-                "sections": []
-            }
-
-            if(r.notes): oneP["notesPlain"] = r.notes
-
-            if(r.custom_fields):
-                oneP["sections"].append(
-                    {
-                        "title": "Custom fields",
-                        "fields": []
-                    }
-                )
-
-                for custom_field in r.custom_fields:
-                    oneP["sections"][0]["fields"].append({
-                        "k": "string",
-                        "t": custom_field["name"],
-                        "v": custom_field["value"]
-                    })
-
-            credentials[r.record_uid] = {"json": oneP, "title": r.title, "url": r.login_url, "tags": []}
-        
-        credentials[r.record_uid]["tags"].append("/".join(our_parents ))
-
-        if(r.attachments != None) :
-            
-            dir = os.path.sep.join([TMPDIR, "onepassword-migration-downloads", op_user, r.record_uid])
-            
-            if not os.path.exists(dir): 
-                os.makedirs(dir)
-            
-            os.chdir(dir)
-            
-            dl = RecordDownloadAttachmentCommand()
-
-            kwargs = {'record': r.record_uid}
-
-            dl.execute(kp_params, **kwargs)
-            
-            credentials[r.record_uid]["docs"] = dir
-        
+    print("folder.name="+folder.name)
+    
+    process_folder_records(op_user, our_parents, folder_uid)
     
     for subfolder in folder.subfolders: 
       process_folder(op_user, subfolder, our_parents )
@@ -150,14 +172,14 @@ def get_keeper_folders():
     api.sync_down(kp_params)
    
     for uid, folder in kp_params.folder_cache.items() :
-        if(folder.parent_uid == None and folder.type == 'user_folder'):
+        if(folder.parent_uid == None):
             process_folder(op_user, uid)
     
     print(str(len(credentials)) +" Passwords to migrate.")
 
     print("Logging into 1Password...")
 
-    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw"], op_pwd)
+    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand=cmdlinetool"], op_pwd)
 
     for uid, pword in credentials.items():
         
