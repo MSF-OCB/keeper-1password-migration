@@ -13,7 +13,7 @@ Tentative plan:
    - health check (no credit cards, no totp)
    - migration (done using "provisioning admin" user of 1P)
 
-
+```
  /index.html
      login form 
      POST /login 
@@ -32,7 +32,7 @@ Tentative plan:
         return hash which is text dir of stdout
      /console/HASH
         pipes the text file straight to the response, plaintext
-
+```
 Environment variables & defaults
 
 ```text
