@@ -15,23 +15,35 @@ Tentative plan:
 
 ```
  /index.html
-     login form 
-     POST /login 
-         username, password
-     200 with hash
-     console showing health check (credit cards? OTP?), refresh every 500ms, check for end-token
-     health check txt ends with \*\*CLEAR\*\* or something
-     new button
-     POST /migrate
-         username, password
-     200 with hash
-     console showing migration, refresh every 500ms, check for end-token
      
+     1.  login form 
+     2. POST /login 
+         username, password
+     
+     3. endpoint returns 401 if not ok or 200 with HASH
+     
+     4. page shows textbox auto-scrolling to bottom with results of /console/HASH, refreshes every 500ms, check for end-token  \*\*CLEAR\*\* to show "migrate" button.
+     
+     5. migrate button clicked:
+     
+     6. POST /migrate
+         username, password
+     
+     7. endpoint returns 200 with hash
+     
+     8. page shows textbox auto-scrolling to bottom with results of /console/HASH, refreshes every 500ms, check for end-token  \*\*DONE\*\*   or something
+     
+     endpoints in Flask:
      /login & /migrate
-        launches process that logs into keeper, echoes stdout to progress window
-        return hash which is text dir of stdout
+        both validate input then launches process with keeper creds as arguments, that logs into keeper, and echoes stdout to a text file named HASH
+        return hash which is text file of stdout
      /console/HASH
         pipes the text file straight to the response, plaintext
+        
+        
+      'unhappy' flows:
+        -> error happens because of API bug or migratio bug -> just retry.
+        -> thread gets stuck -> restart the container eventually
 ```
 Environment variables & defaults
 
