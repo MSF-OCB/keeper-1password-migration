@@ -62,6 +62,8 @@ def process_folder_record(op_user, our_parents, record_uid) :
         }
 
         if(r.notes): oneP["notesPlain"] = r.notes
+        
+        name = 1;
 
         if(r.custom_fields):
             oneP["sections"].append(
@@ -74,16 +76,15 @@ def process_folder_record(op_user, our_parents, record_uid) :
             for custom_field in r.custom_fields:
                 oneP["sections"][0]["fields"].append({
                     "k": "string",
+                    "n": str(name),
                     "t": custom_field["name"],
                     "v": custom_field["value"]
                 })
-
-        if r.title == "Benuc035" :
-            print("*******************")
-            print(json.dumps(oneP))
-            print("*******************")
-
-        credentials[r.record_uid] = {"json": oneP, "title": r.title, "url": r.login_url, "tags": []}
+                
+                name += 1
+   
+        # ! important ! non-breaking spaces mess things up!
+        credentials[r.record_uid] = {"json": oneP, "title": r.title.replace("\xa0", " "), "url": r.login_url, "tags": []}
 
     credentials[r.record_uid]["tags"].append("/".join(our_parents ))
 
@@ -179,8 +180,20 @@ def get_keeper_folders():
 
     token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand=cmdlinetool"], op_pwd)
 
+    current_items = json.loads(exec_op([OP_EXE, "list", "items", "Login", "--session", token]))
+    
+    def matches(login, pword) :
+        return login["overview"]["title"] == pword["title"] \
+          and pword["tags"][0] in login["overview"]["tags"] \
+          and (("url" in login["overview"] and pword["url"] == login["overview"]["url"]) or \
+                ("url" not in login["overview"] and pword["url"]==""))
+
     for uid, pword in credentials.items():
         
+        if next((login for login in current_items if matches(login, pword)), None):
+            print("Already imported: "+pword["title"])
+            continue
+
         print("Exporting \""+pword["title"]+"\"...")
         
         to_encode = pword["json"]
@@ -197,6 +210,8 @@ def get_keeper_folders():
 
             to_encode["sections"].append(attachments)
             
+            name=99999
+            
             for file_name in os.listdir(pword["docs"]) :
             
                 upload_args = [OP_EXE, "create", "document", file_name, "--session", token]
@@ -209,9 +224,12 @@ def get_keeper_folders():
                     {
                         "k": "reference",
                         "t": file_name,
+                        "n": str(name),
                         "v": json.loads(uploaded_file)["uuid"]
                     }
                 )
+                
+                name += 1
 
         encoded_entry = exec_op([OP_EXE, "encode", "--session", token], json.dumps(to_encode))
         
@@ -224,6 +242,7 @@ def get_keeper_folders():
             result = exec_op(create_args)
         except Exception as failure: 
             print("Cant save "+json.dumps(to_encode)+", err="+str(failure))
+           
         
     print('Done.')
 
