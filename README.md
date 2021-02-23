@@ -14,6 +14,25 @@ Tentative plan:
    - migration (done using "provisioning admin" user of 1P)
 
 
+ /index.html
+     login form 
+     POST /login 
+         username, password
+     200 with hash
+     console showing health check (credit cards? OTP?), refresh every 500ms, check for end-token
+     health check txt ends with \*\*CLEAR\*\* or something
+     new button
+     POST /migrate
+         username, password
+     200 with hash
+     console showing migration, refresh every 500ms, check for end-token
+     
+     /login & /migrate
+        launches process that logs into keeper, echoes stdout to progress window
+        return hash which is text dir of stdout
+     /console/HASH
+        pipes the text file straight to the response, plaintext
+
 Environment variables & defaults
 
 ```text
