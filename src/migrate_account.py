@@ -87,8 +87,6 @@ def process_folder_record(op_user, our_parents, record_uid) :
 
     credentials[r.record_uid]["tags"].append("/".join(our_parents ))
 
-    print("r.attachments="+str(r.attachments))
-
     if(r.attachments) :
 
         dir = os.path.sep.join([TMPDIR, "onepassword-migration-downloads", op_user, r.record_uid])
@@ -119,14 +117,14 @@ def process_folder(op_user, folder_uid, parents=[]) :
 
     folder = kp_params.folder_cache[folder_uid];
 
-    if(folder.type != "user_folder" && not MIGRATE_SHARED) :
+    if(folder.type != "user_folder" and not MIGRATE_SHARED) :
         return
     
     our_parents = parents.copy()
 
     our_parents.append(folder.name)
 
-    print("folder.name="+folder.name)
+    print("Processing "+folder.name)
     
     process_folder_records(op_user, our_parents, folder_uid)
     
@@ -222,7 +220,10 @@ def get_keeper_folders():
         if(pword["url"]): create_args.extend(["--url", pword["url"]]);
         if(pword["tags"]): create_args.extend(["--tags", ",".join(pword["tags"])]);
         
-        result = exec_op(create_args, json.dumps(to_encode))
+        try:
+            result = exec_op(create_args)
+        except Exception as failure: 
+            print("Cant save "+json.dumps(to_encode)+", err="+str(failure))
         
     print('Done.')
 
