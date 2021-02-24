@@ -22,7 +22,9 @@ Tentative plan:
      
      3. endpoint returns 401 if not ok or 200 with HASH
      
-     4. page shows textbox auto-scrolling to bottom with results of /console/HASH, refreshes every 500ms, check for end-token  \*\*CLEAR\*\* to show "migrate" button.
+     4. page shows textbox auto-scrolling to bottom with 
+        results of /console/HASH, refreshes every 500ms,
+       check for end-token  \*\*CLEAR\*\* to show "migrate" button.
      
      5. migrate button clicked:
      
@@ -31,11 +33,15 @@ Tentative plan:
      
      7. endpoint returns 200 with hash
      
-     8. page shows textbox auto-scrolling to bottom with results of /console/HASH, refreshes every 500ms, check for end-token  \*\*DONE\*\*   or something
+     8. page shows textbox auto-scrolling to bottom with results
+        of /console/HASH, refreshes every 500ms,
+        check for end-token  \*\*DONE\*\*   or something
      
      endpoints in Flask:
      /login & /migrate
-        both validate input then launches process with keeper creds as arguments, that logs into keeper, and echoes stdout to a text file named HASH
+        both validate input then launches process with keeper 
+        creds as arguments, that logs into keeper, 
+        and echoes stdout to a text file named HASH
         return hash which is text file of stdout
      /console/HASH
         pipes the text file straight to the response, plaintext
