@@ -1,5 +1,61 @@
+body {
+  margin: 0;
+  background-color: #f9f9f9;
+}
+.header {
+  overflow: hidden;
+  background-color: #f1f1f1;
+  margin-bottom: 40px;
+}
+
+.header h2 {
+  margin-left: 15px;
+}
+
+.form-container {
+  align-items: center;
+  margin: auto;
+  width: 50%;
+  /* border: 3px solid green; */
+  padding: 10px;
+}
+
 form {
   display: flex;
   flex-direction: column;
-  width: fit-content;
+  justify-content: space-around;
+}
+
+input {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #333;
+  font-size: 18px;
+  font-weight: 300;
+  margin: 0 0 26px;
+  padding: 13px 26px;
+  resize: none;
+  width: 100%;
+}
+
+/* .label-checkbox {
+  display: inline-block;
+  font-size: 16px;
+  margin: 0 26px 26px;
+} */
+.dots {
+  display: flex;
+  justify-content: space-evenly;
+  margin-bottom: 45px;
+}
+.dot {
+  height: 25px;
+  width: 25px;
+  background-color: #bbb;
+  border-radius: 50%;
+  text-align: center;
+  color: white;
+  display: inline-block;
 }
