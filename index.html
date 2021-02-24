@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Keeper</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+  </head>
+
+  <body>
+    <section>
+      <h1>Keeper Migrating</h1>
+      <form id='form' action="#">
+        <label for="kuser">Keeper user:</label>
+        <input type="text" id="usernameInput" name="kuser" required/>
+        <label for="lname">Keeper Master Password:</label>
+        <input type="password" id="passwordInput" name="lname" required/>
+        <input type="checkbox" id="checkbox" name="checkBox" value="checked" required>
+        <label for="checkBox"> I have disabled MFA and configured a master password:</label><br><br>
+        <button  id='submitButton'>Login</button>
+      </form>
+    </section>
+
+    <section class="content">
+      <h3 class="artist"></h3>
+      <ul class="songs"></ul>
+    </section>
+
+    <script type="text/javascript" src="js/script.js"></script>
+  </body>
+</html>
