@@ -1,8 +1,13 @@
 body {
   margin: 0;
   background-color: #f9f9f9;
+  text-align: center;
+  color: #333333;
 }
+
 .header {
+  text-align: left;
+  color: black;
   overflow: hidden;
   background-color: #f1f1f1;
   margin-bottom: 40px;
@@ -16,7 +21,6 @@ body {
   align-items: center;
   margin: auto;
   width: 50%;
-  /* border: 3px solid green; */
   padding: 10px;
 }
 
@@ -39,12 +43,6 @@ input {
   resize: none;
   width: 100%;
 }
-
-/* .label-checkbox {
-  display: inline-block;
-  font-size: 16px;
-  margin: 0 26px 26px;
-} */
 .dots {
   display: flex;
   justify-content: space-evenly;
@@ -53,9 +51,46 @@ input {
 .dot {
   height: 25px;
   width: 25px;
-  background-color: #bbb;
+  color: #333;
+  background-color: #ddd;
   border-radius: 50%;
-  text-align: center;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+#in-progress {
+  background-color: #ed1a24;
   color: white;
-  display: inline-block;
+}
+
+#hidden {
+  display: none;
+}
+
+.scroll-container {
+  text-align: left;
+  overflow: scroll;
+  width: 80%;
+  height: 200px;
+}
+.submit-button {
+  color: #333;
+  background-color: #ddd;
+  cursor: pointer;
+  margin-bottom: 78px;
+  width: 100px;
+  border-radius: 5px;
+  height: 50px;
+  border: none;
+  font-size: 18px;
+}
+
+.submit-button:hover {
+  color: white;
+  background-color: #ed1a24;
+  transition: 0.5s;
+}
+
+.submit-button:disabled {
+  display: none;
 }
