@@ -2,7 +2,9 @@
 
 Does a one-shot migration from Keeper Enterprise into 1Password
 
-Does not do TOTP, credit cards, or any shared folders (yet)
+Does not do TOTP, credit cards
+
+Imports shared folders & shared records into your personal vault (probably not what you want)
 
 Environment variables & defaults
 
