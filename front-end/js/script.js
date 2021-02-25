@@ -57,7 +57,7 @@
       return fetch(`${url}/console/${token}`, { method: "GET" })
         .then((response) => response.text())
         .then((result) => {
-          let newLine = document.createElement("p");
+          let newLine = document.createElement("pre");
           newLine.innerHTML = result;
           scrollContainer.removeChild(scrollContainer.lastChild);
           scrollContainer.appendChild(newLine);
