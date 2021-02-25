@@ -9,7 +9,7 @@ $flask run
 '''
 
 import os, re, time
-from flask import Flask, Response, request
+from flask import Flask, Response, request, render_template
 from cryptography.hazmat.primitives import hashes
 from base64 import b64decode, b64encode
 
@@ -28,9 +28,10 @@ if not os.path.exists(MIGRATION_IO_DIR): MIGRATION_IO_DIR.mkdirs()
 SHELL = os.getenv("KEEPER_1P_PASSWORD_SHELL");
 PYTHON = os.getenv("KEEPER_1P_PASSWORD_PYTHON");
 
-@app.route("/")
+@app.route('/')
+@app.route('/index.html')
 def index():
-  return "alive"
+    return render_template('index.html')
 
 def get_hash(inputs):
 
@@ -99,7 +100,8 @@ def get_console_ouptut(consolehash):
     
     if not os.path.exists(file_path): return Response(hash, status=404)
     
-    file_contents = 
+    with open(file_path, "r") as file:
+    	file_contents = file.read()
     
     return Response(file_contents, 200)
     

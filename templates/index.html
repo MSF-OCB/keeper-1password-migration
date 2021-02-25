@@ -8,15 +8,15 @@
     <link
       rel="shortcut icon"
       type="image/x-icon"
-      href="./images/favicon-16x16.png"
+      href="{{ url_for('static', filename='images/favicon-16x16.png') }}"
     />
-    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
   </head>
 
   <body>
     <div class="header">
       <img
-        src="./images/msflogo-trans-background.png"
+        src="{{ url_for('static', filename='images/msflogo-trans-background.png') }}"
         alt="msfLogo"
         class="logo"
       />
@@ -91,9 +91,9 @@
     </section>
 <footer>
   <div style='padding-left:20px'>
-      <img src='./images/msflogo-trans-background.png' alt="msfLogo" class="logo" />
+      <img src="{{ url_for('static', filename='images/msflogo-trans-background.png') }}" alt="msfLogo" class="logo" />
   </div>
 </footer>
-    <script type="text/javascript" src="js/script.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
   </body>
 </html>
