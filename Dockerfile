@@ -11,6 +11,9 @@ RUN apk add libxml2-dev libxslt-dev && \
 
 COPY src/*.py .
 
+COPY static static
+COPY templates templates
+
 COPY bin/launch.sh launch.sh
 
 EXPOSE 8080
