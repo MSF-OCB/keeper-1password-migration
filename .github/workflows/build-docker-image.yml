@@ -1,0 +1,33 @@
+name: Build and publish image then deploy
+
+on:
+  push:
+    branches:
+     - deploy
+    
+jobs:
+  push_to_registry:
+    name: Push Docker image to GitHub Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        
+      - name: Push relay to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: msf-ocb/keeper-1password-migration/migration-tool
+          tag_with_ref: true
+          
+  redeploy_production:
+    name: Redeploy in production
+    runs-on: ubuntu-latest
+      - name: Redeploys relay config in production
+        uses: msf-ocb/nixos-deploy@master
+        with:
+          nixos_robot_key: ${{ secrets.NIXOS_ROBOT_KEY }}
+          nixos_deploy_service: 'update_keeper_1password_migration_config.service'
+          nixos_deploy_fixed_tunnel_ports: '7100'

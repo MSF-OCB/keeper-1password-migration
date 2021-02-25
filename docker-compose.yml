@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  keeper_1password_migration:
+    image: docker.pkg.github.com/msf-ocb/keeper-1password-migration/migration-tool:deploy
+    env_file: 
+      - ${MSFOCB_SECRETS_DIRECTORY}/keeper_1password_migration_variables
+    expose:
+     - 8080
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cred_relay.entrypoints=websecure
+      - traefik.http.routers.cred_relay.rule=Host(`password-migration.ocb.msf.org`)
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:8080", "-O", "/dev/null"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - web
+      - default
+    restart: unless-stopped
+
+networks:
+  web:
+    external: true

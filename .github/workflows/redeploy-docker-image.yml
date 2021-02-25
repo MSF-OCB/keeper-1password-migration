@@ -1,0 +1,17 @@
+name: Redeploy with existing image
+
+on:
+  workflow_dispatch
+
+jobs:
+  redeploy:
+    name: Redeploy docker image
+    runs-on: ubuntu-latest
+    steps:
+         
+      - name: Redeploys relay config in production
+        uses: msf-ocb/nixos-deploy@master
+        with:
+          nixos_robot_key: ${{ secrets.NIXOS_ROBOT_KEY }}
+          nixos_deploy_service: 'update_keeper_1password_migration_config.service'
+          nixos_deploy_fixed_tunnel_ports: '7100'
