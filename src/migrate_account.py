@@ -154,21 +154,29 @@ def exec_op(args, input_stdin=None, proc_timeout=15) :
     return outs.strip()
 
 
-def get_keeper_folders():    
+def migrate_keeper_1password_cmdline():
     
-    print('Keeper -> 1Password migration (command line 1-account POC)')
+    print('Keeper -> 1Password migration tool (all shared folders into private vault)')
+    
+    migrate_keeper_user_to_1password(
+        keeper_user       = input("Keeper user: "),
+        keeper_password   = getpass.getpass("Keeper password: "),
+        op_user           = input("1Password user: "),
+        op_key            = getpass.getpass("1Password secret key: "),
+        op_pass           = getpass.getpass("1Password password: ")
+    )
+
+def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate=None) :
+
+    if not op_user_to_migrate : op_user_to_migrate = op_user
+
+    print("Retrieving keeper logins for "+keeper_user+"...")
 
     kp_params.login_v3 = False
-    kp_params.user = input("Keeper user: ")
-    kp_params.password = getpass.getpass("Keeper password: ")
+    kp_params.user = keeper_user
+    kp_params.password = keeper_password
     kp_params.server = KEEPER_SERVER
     kp_params.debug = True
-    
-    op_user = input("1Password user: ")
-    op_key = getpass.getpass("1Password secret key: ")
-    op_pwd = getpass.getpass("1Password password: ")
-
-    print("Retrieving keeper logins...")
 
     api.sync_down(kp_params)
    
@@ -178,11 +186,33 @@ def get_keeper_folders():
     
     print(str(len(credentials)) +" Passwords to migrate.")
 
-    print("Logging into 1Password...")
+    print("Logging into 1Password (as provisioning user)...")
+    
+    shorthand = re.sub('[^a-zA-Z0-9]', '', op_user)
 
-    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand=cmdlinetool"], op_pwd)
+    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand], op_pass)
 
-    current_items = json.loads(exec_op([OP_EXE, "list", "items", "Login", "--session", token]))
+    current_items_args = [OP_EXE, "list", "items", "Login", "--session", token]
+    
+    vault_uid=None
+    
+    if op_user != op_user_to_migrate :
+    
+        print("Getting private vault ID for target user("+op_user_to_migrate+")...")
+    
+        vaults = json.loads(exec_op([OP_EXE, "list", "vaults", "--user="+op_user_to_migrate, "--session", token]))
+        
+        #TODO create user if necessary?
+        
+        vault = next((vault for vault in vaults if "Private Vault" in vault["name"]), None)
+        
+        if vault: vault_uid = vault["uuid"]
+        
+        print("Private vault ID = "+str(vault_uid))
+
+    if(vault_uid) : current_items_args.extend(["--vault", vault_uid])
+    
+    current_items = json.loads(exec_op(current_items_args))
     
     def matches(login, pword) :
         return login["overview"]["title"] == pword["title"] \
@@ -219,6 +249,8 @@ def get_keeper_folders():
                 upload_args = [OP_EXE, "create", "document", file_name, "--session", token]
                 
                 if(pword["tags"]): upload_args.extend(["--tags", ",".join(pword["tags"])]);            
+
+                if(vault_uid): upload_args.extend(["--vault", vault_uid])
                 
                 uploaded_file = exec_op(upload_args)
                 
@@ -232,13 +264,16 @@ def get_keeper_folders():
                 )
                 
                 name += 1
-
+                
         encoded_entry = exec_op([OP_EXE, "encode", "--session", token], json.dumps(to_encode))
         
         create_args = [OP_EXE, "create", "item", "Login", encoded_entry, "--session", token, "--title", pword["title"]];
         
         if(pword["url"]): create_args.extend(["--url", pword["url"]]);
+        
         if(pword["tags"]): create_args.extend(["--tags", ",".join(pword["tags"])]);
+        
+        if(vault_uid): create_args.extend(["--vault", vault_uid])
         
         try:
             result = exec_op(create_args)
@@ -249,6 +284,6 @@ def get_keeper_folders():
     print('Done.')
 
 if __name__ == "__main__":
-    get_keeper_folders()
+    migrate_keeper_1password_cmdline()
 
 
