@@ -81,6 +81,10 @@ input {
   height: 300px;
   font-size: 12px;
 }
+
+.scroll-container p {
+  word-break: break-all;
+}
 .submit-button {
   color: white;
   background-color: #ed1a24;
