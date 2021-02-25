@@ -3,7 +3,6 @@ Created on 17 mars 2020
 
 $python -m pip install --upgrade pip
 $pip install flask
-$pip install keepercommander
 
 $set FLASK_APP=rest_endpoints.py
 $flask run
@@ -20,6 +19,10 @@ EMAIL_REGEX=re.compile("""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?
 HASH_REGEX=re.compile("[A-Za-z0-9]{128}");
 
 TMPDIR = os.getenv("TMP", os.getenv("TMPDIR"))
+
+MIGRATION_IO_DIR = os.paths.join(TMPDIR, "keepermigration", "io")
+
+if not os.path.exists(MIGRATION_IO_DIR): MIGRATION_IO_DIR.mkdirs()     
 
 @app.route("/")
 def index():
@@ -39,7 +42,15 @@ def validate(usename, password) :
 
     #IMPORTANT TODO validate password to avoid injection of all stuff
 
+def launch_process(username, password, operation, output_file) : 
 
+    env_vars = {
+        "KEEPER_1P_USERNAME": username,
+        "KEEPER_1P_PASSWORD": password,
+        "KEEPER_1P_OP": operation
+    }
+
+    subprocess.Popen([SHELL, "-c", "nohup python $FOO > "+os.paths.join(MIGRATION_IO_DIR,output_file)], env_vars)
 
 @app.route('/login', methods=['POST'])
 def login_health():
@@ -52,7 +63,7 @@ def login_health():
 
     hash = get_hash([usename, password, time.current_milli_time(), os.getrandom(32), "login_health"])
 
-    #launch process with file
+    file_path = os.paths.join(MIGRATION_IO_DIR, hash)
 
     #launch "python migrate_accounts.py --option A --option B > "+file_path
     
@@ -69,9 +80,7 @@ def migrate_launch():
 
     hash = get_hash([usename, password, time.current_milli_time(), os.getrandom(32), "login_health"])
     
-    #launch process with file
-    
-    file_path = os.paths.join(TMPDIR, "keepermigration", consolehash)
+    file_path = os.paths.join(MIGRATION_IO_DIR, hash)
     
     #launch "python migrate_accounts.py --option A --option B > "+file_path
 
@@ -82,7 +91,7 @@ def get_console_ouptut(consolehash):
 
     if not HASH_REGEX.match(consolehash) return Response("", status=400)
 
-    file_path = os.paths.join(TMPDIR, "keepermigration", consolehash)
+    file_path = os.paths.join(MIGRATION_IO_DIR, consolehash)
     
     if not os.path.exists(file_path): return Response(hash, status=404)
     
