@@ -59,6 +59,7 @@
         .then((result) => {
           let newLine = document.createElement("p");
           newLine.innerHTML = result;
+          scrollContainer.removeChild(scrollContainer.lastChild);
           scrollContainer.appendChild(newLine);
           sleep(1000);
           return getConsole(token, result);
