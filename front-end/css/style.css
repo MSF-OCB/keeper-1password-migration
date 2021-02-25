@@ -6,15 +6,18 @@ body {
 }
 
 .header {
-  text-align: left;
-  color: white;
-  overflow: hidden;
-  background-color: #e83626;
-  margin-bottom: 40px;
+  border-bottom: 1px solid #ddd;
+  background-color: #fefefe;
+  padding-right: 0;
+  padding-left: 0;
+  display: flex;
 }
 
 .header h2 {
-  margin-left: 15px;
+  color: #4c4a4a;
+  margin-left: 10px;
+  font-weight: bold;
+  margin-top: 20px;
 }
 
 .form-container {
@@ -45,7 +48,7 @@ input {
   width: 100%;
 }
 .dots {
-  border: 1px solid black;
+  border-bottom: 1px solid #ddd;
   margin: auto;
   width: 50%;
   padding: 10px;
@@ -98,4 +101,10 @@ input {
 
 .submit-button:disabled {
   display: none;
+}
+
+.logo {
+  width: 60px;
+  text-align: left;
+  margin-left: 10px;
 }
