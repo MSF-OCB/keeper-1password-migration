@@ -20,6 +20,7 @@ from keepercommander.commands.record import RecordDownloadAttachmentCommand
 from keepercommander.params import KeeperParams
 from keepercommander.subfolder import UserFolderNode
 from subprocess import run, Popen, PIPE
+from base64 import b64decode, b64encode
 
 import getpass, json, os, re, subprocess
 
@@ -283,7 +284,31 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
 
 if __name__ == "__main__":
 
-    if( not os.getenv("KEEPER_1P_OP")) : 
+    operation_b64 = os.getenv("KEEPER_1P_OP")
+
+    if( not operation_b64) : 
         migrate_keeper_1password_cmdline()
+        return
+
+    operation = b64decode(operation_b64)
+
+    if(operation == "login_health") :
+
+#TODO
+#        check_keeper_account_migratability(
+#            keeper_user          = b64decode(os.getenv("KEEPER_1P_USERNAME"))
+#            keeper_password      = b64decode(os.getenv("KEEPER_1P_PASSWORD"))
+#        )
+    
+    else if(operation == "migrate_launch") :
+
+        migrate_keeper_user_to_1password(
+            keeper_user          = b64decode(os.getenv("KEEPER_1P_USERNAME"))
+            keeper_password      = b64decode(os.getenv("KEEPER_1P_PASSWORD"))
+            op_user              = b64decode(os.getenv("KEEPER_1P_PROVISIONING_USER"))
+            op_key               = b64decode(os.getenv("KEEPER_1P_PROVISIONING_PASSWORD")),
+            op_pass              = b64decode(os.getenv("KEEPER_1P_PROVISIONING_SECRETKEY"))
+            op_user_to_migrate   = b64decode(os.getenv("KEEPER_1P_USERNAME"))
+        )
 
 

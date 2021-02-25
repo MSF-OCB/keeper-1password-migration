@@ -11,6 +11,7 @@ $flask run
 import os, re, time
 from flask import Flask, Response, request
 from cryptography.hazmat.primitives import hashes
+from base64 import b64decode, b64encode
 
 app = Flask(__name__)
 
@@ -48,9 +49,9 @@ def validate(usename, password) :
 def launch_process(username, password, operation, output_file) : 
 
     env_vars = {
-        "KEEPER_1P_USERNAME": username,
-        "KEEPER_1P_PASSWORD": password,
-        "KEEPER_1P_OP": operation
+        "KEEPER_1P_USERNAME": b64encode(username),
+        "KEEPER_1P_PASSWORD": b64encode(password),
+        "KEEPER_1P_OP": b64encode(operation)
     }
 
     subprocess.Popen([SHELL, "-c", "nohup "+PYTHON+" ./migrate_account.py > "+os.paths.join(MIGRATION_IO_DIR,output_file)], env_vars)
@@ -81,7 +82,7 @@ def migrate_launch():
     if not validate(username, password)
         return Response(hash, status=400)
 
-    hash = get_hash([usename, password, time.current_milli_time(), os.getrandom(32), "login_health"])
+    hash = get_hash([usename, password, time.current_milli_time(), os.getrandom(32), "migrate_launch"])
     
     file_path = os.paths.join(MIGRATION_IO_DIR, hash)
     
