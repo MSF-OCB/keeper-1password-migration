@@ -22,7 +22,10 @@ TMPDIR = os.getenv("TMP", os.getenv("TMPDIR"))
 
 MIGRATION_IO_DIR = os.paths.join(TMPDIR, "keepermigration", "io")
 
-if not os.path.exists(MIGRATION_IO_DIR): MIGRATION_IO_DIR.mkdirs()     
+if not os.path.exists(MIGRATION_IO_DIR): MIGRATION_IO_DIR.mkdirs()
+
+SHELL = os.getenv("KEEPER_1P_PASSWORD_SHELL");
+PYTHON = os.getenv("KEEPER_1P_PASSWORD_PYTHON");
 
 @app.route("/")
 def index():
@@ -50,7 +53,7 @@ def launch_process(username, password, operation, output_file) :
         "KEEPER_1P_OP": operation
     }
 
-    subprocess.Popen([SHELL, "-c", "nohup python $FOO > "+os.paths.join(MIGRATION_IO_DIR,output_file)], env_vars)
+    subprocess.Popen([SHELL, "-c", "nohup "+PYTHON+" ./migrate_account.py > "+os.paths.join(MIGRATION_IO_DIR,output_file)], env_vars)
 
 @app.route('/login', methods=['POST'])
 def login_health():

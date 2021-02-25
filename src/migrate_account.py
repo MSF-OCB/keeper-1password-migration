@@ -2,9 +2,7 @@
 
 Does a one-shot migration from Keeper Enterprise into 1Password
 
-Does not do TOTP, credit cards
-
-Imports shared folders & shared records into your personal vault (probably not what you want)
+Does not do TOTP, credit cards, or any shared folders (yet)
 
 Environment variables & defaults
 
@@ -284,6 +282,8 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     print('Done.')
 
 if __name__ == "__main__":
-    migrate_keeper_1password_cmdline()
+
+    if( not os.getenv("KEEPER_1P_OP")) : 
+        migrate_keeper_1password_cmdline()
 
 
