@@ -12,7 +12,7 @@
 
   const login = async (e, endpoint) => {
     if (endpoint === "migrate") migrationButton.setAttribute("id", "hidden");
-    let counter = endpoint === "login" ? 0 : 1;
+    let counter = endpoint === "login" ? 1 : 2;
     e.preventDefault();
     myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
     urlencoded.append("username", userName.value);
@@ -52,7 +52,6 @@
     if (endToken.includes("CLEAR")) {
       return migrationButton.removeAttribute("id", "hidden");
     } else if (endToken.includes("DONE")) {
-      dots[2].setAttribute("id", "in-progress");
       return doneMsg.removeAttribute("id", "hidden");
     } else {
       return fetch(`${url}/console/${token}`, { method: "GET" })
