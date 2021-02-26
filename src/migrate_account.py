@@ -6,10 +6,23 @@ Does not do TOTP, credit cards, or any shared folders (yet)
 
 Environment variables & defaults
 
+Used in integration with web interface:
+
+KEEPER_1P_OPERATION      
+KEEPER_1P_PASSWORD
+KEEPER_1P_USERNAME
+KEEPER_1P_PROVISIONING_PASSWORD     should be set globally (base64 encoded)
+KEEPER_1P_PROVISIONING_SECRETKEY    should be set globally (base64 encoded)
+KEEPER_1P_PROVISIONING_USER         should be set globally (base64 encoded)
+KEEPER_1P_OP_EXE                    should be set globally
+
+
+With defaults:
+
 KEEPER_SERVER       https://keepersecurity.eu/api/v2/
 OP_SERVER           my.1password.com
-OP_EXE              D:\\1password\\op.exe
-TMPDIR or TMP
+KEEPER_1P_OP_EXE    D:\\1password\\op.exe
+TMPDIR or TMP       /tmp
 
 '''
 
@@ -27,9 +40,9 @@ import getpass, json, os, re, subprocess
 KEEPER_SERVER = os.getenv("KEEPER_API_URL", default="https://keepersecurity.eu/api/v2/")
 OP_SERVER = os.getenv("ONEPASS_SERVER", default="msfocb.1password.eu")
 
-TMPDIR = os.paths.join(os.getenv("TMP", os.getenv("TMPDIR")), "keepermigration", "downloads")
+TMPDIR = os.path.join(os.getenv("TMP", os.getenv("TMPDIR", "/tmp")), "keepermigration", "downloads")
 
-OP_EXE = os.getenv("OP_EXE", default="D:\\1password\\op.exe")
+OP_EXE = os.getenv("KEEPER_1P_OP_EXE", default="D:\\1password\\op.exe")
 
 MIGRATE_SHARED = True
 
@@ -290,35 +303,42 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
             print("Cant save "+json.dumps(to_encode)+", err="+str(failure))
            
         
-    print('Done.')
+    print('***DONE***')
 
-if __name__ == "__main__":
+def decode_env(var_name) : 
+    return b64decode(os.getenv(var_name)).decode("UTF-8")
 
-    operation_b64 = os.getenv("KEEPER_1P_OP")
+def main() :
 
-    if( not operation_b64) : 
+    if( not os.getenv("KEEPER_1P_OPERATION")) : 
         migrate_keeper_1password_cmdline()
         return
 
-    operation = b64decode(operation_b64)
+    operation = decode_env("KEEPER_1P_OPERATION")
 
     if(operation == "login_health") :
+    
+        print("todo : login health check")
 
 #TODO
 #        check_keeper_account_migratability(
-#            keeper_user          = b64decode(os.getenv("KEEPER_1P_USERNAME"))
-#            keeper_password      = b64decode(os.getenv("KEEPER_1P_PASSWORD"))
+#            keeper_user          = decode_env("KEEPER_1P_USERNAME"),
+#            keeper_password      = decode_env("KEEPER_1P_PASSWORD")
 #        )
+
+        print("***CLEAR***")
     
-    else if(operation == "migrate_launch") :
+    elif(operation == "migrate_launch") :
 
         migrate_keeper_user_to_1password(
-            keeper_user          = b64decode(os.getenv("KEEPER_1P_USERNAME"))
-            keeper_password      = b64decode(os.getenv("KEEPER_1P_PASSWORD"))
-            op_user              = b64decode(os.getenv("KEEPER_1P_PROVISIONING_USER"))
-            op_key               = b64decode(os.getenv("KEEPER_1P_PROVISIONING_PASSWORD")),
-            op_pass              = b64decode(os.getenv("KEEPER_1P_PROVISIONING_SECRETKEY"))
-            op_user_to_migrate   = b64decode(os.getenv("KEEPER_1P_USERNAME"))
+            keeper_user          = decode_env("KEEPER_1P_USERNAME"),
+            keeper_password      = decode_env("KEEPER_1P_PASSWORD"),
+            op_user              = decode_env("KEEPER_1P_PROVISIONING_USER"),
+            op_key               = decode_env("KEEPER_1P_PROVISIONING_PASSWORD"),
+            op_pass              = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
+            op_user_to_migrate   = decode_env("KEEPER_1P_USERNAME")
         )
 
+if __name__ == "__main__" :
+    main()
 
