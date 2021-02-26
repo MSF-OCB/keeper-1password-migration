@@ -8,6 +8,7 @@ $set FLASK_APP=rest_endpoints.py
 $flask run
 '''
 
+import unicodedata
 import os, re, time
 from flask import Flask, Response, request, render_template
 from cryptography.hazmat.primitives import hashes
@@ -19,9 +20,9 @@ EMAIL_REGEX=re.compile("""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?
 
 HASH_REGEX=re.compile("[A-Za-z0-9]{128}");
 
-TMPDIR = os.getenv("TMP", os.getenv("TMPDIR"))
+HASH_NOK_PASSWORD=re.compile("[\x00-\x1F]+");
 
-MIGRATION_IO_DIR = os.paths.join(TMPDIR, "keepermigration", "io")
+MIGRATION_IO_DIR = os.paths.join(os.getenv("TMP", os.getenv("TMPDIR")), "keepermigration", "io")
 
 if not os.path.exists(MIGRATION_IO_DIR): MIGRATION_IO_DIR.mkdirs()
 
@@ -41,13 +42,22 @@ def get_hash(inputs):
    
    return digest.finalize().hex()
 
-def validate(usename, password) :
+def is_valid(usename, password) :
+    
+    if not EMAIL_REGEX.match(usename) :
+        return False
+    
+    # only blocking on control characters, the rest will be b64-encoded 
+    # before being passed as password env variable anyway, 
+    
+    if HASH_NOK_PASSWORD.match(password) :
+        return False;
+    
+    return True
 
-    if not EMAIL_REGEX.match(email) return False
+def launch_process(username, password, operation) : 
 
-    #IMPORTANT TODO validate password to avoid injection of all stuff
-
-def launch_process(username, password, operation, output_file) : 
+    output_file = get_hash([usename, password, time.current_milli_time(), os.getrandom(32), operation])
 
     env_vars = {
         "KEEPER_1P_USERNAME": b64encode(username),
@@ -56,6 +66,8 @@ def launch_process(username, password, operation, output_file) :
     }
 
     subprocess.Popen([SHELL, "-c", "nohup "+PYTHON+" ./migrate_account.py > "+os.paths.join(MIGRATION_IO_DIR,output_file)], env_vars)
+    
+    return output_file;
 
 @app.route('/login', methods=['POST'])
 def login_health():
@@ -63,15 +75,11 @@ def login_health():
     username=request.form.get('username')
     password=request.form.get('password')
     
-    if not validate(username, password)
+    if not is_valid(username, password)
         return Response(hash, status=400)
 
-    hash = get_hash([usename, password, time.current_milli_time(), os.getrandom(32), "login_health"])
+    output_file_hash = launch_process(username, password, "login_health")
 
-    file_path = os.paths.join(MIGRATION_IO_DIR, hash)
-
-    #launch "python migrate_accounts.py --option A --option B > "+file_path
-    
     return Response(hash, status=200)
 
 @app.route('/migrate', methods=['POST'])
@@ -80,7 +88,7 @@ def migrate_launch():
     username=request.form.get('username')
     password=request.form.get('password')
 
-    if not validate(username, password)
+    if not is_valid(username, password)
         return Response(hash, status=400)
 
     hash = get_hash([usename, password, time.current_milli_time(), os.getrandom(32), "migrate_launch"])
@@ -92,16 +100,16 @@ def migrate_launch():
     return Response(hash, status=200)
 
 @app.route('/console/<consolehash>', methods=['GET'])
-def get_console_ouptut(consolehash):
+def get_console_output(consolehash):
 
-    if not HASH_REGEX.match(consolehash) return Response("", status=400)
+    if not HASH_REGEX.match(consolehash) : return Response("", status=400)
 
     file_path = os.paths.join(MIGRATION_IO_DIR, consolehash)
     
     if not os.path.exists(file_path): return Response(hash, status=404)
     
     with open(file_path, "r") as file:
-    	file_contents = file.read()
+        file_contents = file.read()
     
     return Response(file_contents, 200)
     

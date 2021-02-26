@@ -26,7 +26,9 @@ import getpass, json, os, re, subprocess
 
 KEEPER_SERVER = os.getenv("KEEPER_API_URL", default="https://keepersecurity.eu/api/v2/")
 OP_SERVER = os.getenv("ONEPASS_SERVER", default="msfocb.1password.eu")
-TMPDIR = os.getenv("TMP", os.getenv("TMPDIR"))
+
+TMPDIR = os.paths.join(os.getenv("TMP", os.getenv("TMPDIR")), "keepermigration", "downloads")
+
 OP_EXE = os.getenv("OP_EXE", default="D:\\1password\\op.exe")
 
 MIGRATE_SHARED = True
@@ -87,24 +89,24 @@ def process_folder_record(op_user, our_parents, record_uid) :
         # ! important ! non-breaking spaces mess things up!
         credentials[r.record_uid] = {"json": oneP, "title": r.title.replace("\xa0", " "), "url": r.login_url, "tags": []}
 
+        if(r.attachments) :
+
+            dir = os.path.sep.join([TMPDIR, op_user, r.record_uid])
+
+            if not os.path.exists(dir): 
+                os.makedirs(dir)
+
+            os.chdir(dir)
+
+            dl = RecordDownloadAttachmentCommand()
+
+            kwargs = {'record': r.record_uid}
+
+            dl.execute(kp_params, **kwargs)
+
+            credentials[r.record_uid]["docs"] = dir
+
     credentials[r.record_uid]["tags"].append("/".join(our_parents ))
-
-    if(r.attachments) :
-
-        dir = os.path.sep.join([TMPDIR, "onepassword-migration-downloads", op_user, r.record_uid])
-
-        if not os.path.exists(dir): 
-            os.makedirs(dir)
-
-        os.chdir(dir)
-
-        dl = RecordDownloadAttachmentCommand()
-
-        kwargs = {'record': r.record_uid}
-
-        dl.execute(kp_params, **kwargs)
-
-        credentials[r.record_uid]["docs"] = dir
 
 
 def process_folder_records(op_user, our_parents, folder_uid) :
@@ -145,7 +147,7 @@ def exec_op(args, input_stdin=None, proc_timeout=15) :
     try:
         outs, errs = proc.communicate(input=input_stdin, timeout=proc_timeout)
     except TimeoutExpired:
-        raise Exception("Timeout on "+str(args)+", in="+input_stdin+", timeout="+timeout)
+        raise Exception("Timeout on "+str(args)+", timeout="+timeout)
 
     if(errs != ""):
         raise Exception("Error on executing "+str(args)+": "+errs)
@@ -202,6 +204,14 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
         vaults = json.loads(exec_op([OP_EXE, "list", "vaults", "--user="+op_user_to_migrate, "--session", token]))
         
         #TODO create user if necessary?
+        #TODO create user if necessary?
+        #TODO create user if necessary?
+        #TODO create user if necessary?
+        #TODO create user if necessary?
+        #TODO create user if necessary?
+        #TODO create user if necessary?
+        #TODO create user if necessary?
+        #TODO create user if necessary?
         
         vault = next((vault for vault in vaults if "Private Vault" in vault["name"]), None)
         
@@ -213,7 +223,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     
     current_items = json.loads(exec_op(current_items_args))
     
-    def matches(login, pword) :
+    def already_imported(login, pword) :
         return login["overview"]["title"] == pword["title"] \
           and pword["tags"][0] in login["overview"]["tags"] \
           and (("url" in login["overview"] and pword["url"] == login["overview"]["url"]) or \
@@ -221,7 +231,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
 
     for uid, pword in credentials.items():
         
-        if next((login for login in current_items if matches(login, pword)), None):
+        if next((login for login in current_items if already_imported(login, pword)), None):
             print("Already imported: "+pword["title"])
             continue
 
