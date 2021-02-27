@@ -42,6 +42,8 @@ OP_SERVER = os.getenv("ONEPASS_SERVER", default="msfocb.1password.eu")
 
 TMPDIR = os.path.join(os.getenv("TMP", os.getenv("TMPDIR", "/tmp")), "keepermigration", "downloads")
 
+CONFIG_DIR = os.path.join(os.getenv("TMP", os.getenv("TMPDIR", "/tmp")), "keepermigration", "config")
+
 OP_EXE = os.getenv("KEEPER_1P_OP_EXE", default="D:\\1password\\op.exe")
 
 MIGRATE_SHARED = True
@@ -238,7 +240,10 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     
     shorthand = re.sub('[^a-zA-Z0-9]', '', op_user)
 
-    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand], op_pass)
+    if not os.path.exists(CONFIG_DIR) : os.makedirs(CONFIG_DIR)
+
+
+    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand, "--config", CONFIG_DIR], op_pass)
 
     current_items_args = [OP_EXE, "list", "items", "Login", "--session", token]
     
@@ -393,8 +398,8 @@ def main() :
             keeper_user          = decode_env("KEEPER_1P_USERNAME"),
             keeper_password      = decode_env("KEEPER_1P_PASSWORD"),
             op_user              = decode_env("KEEPER_1P_PROVISIONING_USER"),
-            op_key               = decode_env("KEEPER_1P_PROVISIONING_PASSWORD"),
-            op_pass              = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
+            op_key               = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
+            op_pass              = decode_env("KEEPER_1P_PROVISIONING_PASSWORD"),
             op_user_to_migrate   = decode_env("KEEPER_1P_USERNAME")
         )
 
@@ -404,8 +409,8 @@ def main() :
             keeper_user          = decode_env("KEEPER_1P_USERNAME"),
             keeper_password      = decode_env("KEEPER_1P_PASSWORD"),
             op_user              = decode_env("KEEPER_1P_PROVISIONING_USER"),
-            op_key               = decode_env("KEEPER_1P_PROVISIONING_PASSWORD"),
-            op_pass              = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
+            op_key               = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
+            op_pass              = decode_env("KEEPER_1P_PROVISIONING_PASSWORD"),
             op_user_to_migrate   = decode_env("KEEPER_1P_USERNAME")
         )
 

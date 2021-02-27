@@ -75,7 +75,7 @@ def launch_process(username, password, operation) :
         "KEEPER_1P_PROVISIONING_USER"       : os.getenv("KEEPER_1P_PROVISIONING_USER"),
         "KEEPER_1P_PROVISIONING_PASSWORD"   : os.getenv("KEEPER_1P_PROVISIONING_PASSWORD"),
         "KEEPER_1P_PROVISIONING_SECRETKEY"  : os.getenv("KEEPER_1P_PROVISIONING_SECRETKEY"),
-        
+        "KEEPER_1P_OP_EXE"                  : os.getenv("KEEPER_1P_OP_EXE"),
         "KEEPER_1P_USERNAME"                : b64encode(username.encode("UTF-8")),
         "KEEPER_1P_PASSWORD"                : b64encode(password.encode("UTF-8")),
         "KEEPER_1P_OPERATION"               : b64encode(operation.encode("UTF-8"))
