@@ -20,10 +20,17 @@
         alt="msfLogo"
         class="logo"
       />
-      <h2>Keeper Migration Tool</h2>
+      <h2>Keeper-to-1Password Migration Tool</h2>
     </div>
-    <h2 style="margin-bottom: 50px">Migrating from Keeper to 1Password</h2>
     <section>
+      <div>
+<p>Keeper has drastically changed its conditions of use. In order to guarantee operational continuity, MSF must migrate to another password management solution: 1Password.</p>
+
+<p><strong>You are the only person who has access to your Keeper vault and the data it contains.</strong><p>
+
+<p><strong>You need to migrate your data by using the below tool &mdash; <u>no one else can do it for you!</u></strong><p>
+
+      </div>
       <div class="dots">
         <div class="dots-container">
           <span class="dot" id='in-progress'>1</span>
@@ -37,11 +44,26 @@
           <span class="dot">3</span>
           <p>Migrate</p>
         </div>
+        <div class="dots-container">
+          <span class="dot">4</span>
+          <p>Finish</p>
+        </div>
       </div>
       <div class="form-container">
-        <div id="hidden" class="scroll-container">
+        <div class="hidden scroll-container">
         </div>
         <form id="form" action="#">
+          <div style="text-align: left">
+            <label for="checkbox1"
+              ><input
+                type="checkbox"
+                id="checkbox1"
+                style="width: 30px"
+                required
+              />
+              I have configured a master password and disabled Two-Factor Authentication in Keeper</label
+            >
+          </div>
           <input
             type="text"
             placeholder="Your MSF Email Address"
@@ -56,17 +78,6 @@
             name="lname"
             required
           />
-          <div style="text-align: left">
-            <label for="checkbox1"
-              ><input
-                type="checkbox"
-                id="checkbox1"
-                style="width: 30px"
-                required
-              />
-              I have disabled Two-Factor Authentication and configured a master password</label
-            >
-          </div>
           <div>
             <button
               class="submit-button"
@@ -77,16 +88,41 @@
             </button>
           </div>
         </form>
-        <div class="done-msg" id="hidden" style="margin-top: 30px; float: left">
-          <h3>All done, Thanks!</h3>
-        </div>
+
         <button
-          class="submit-button migrate-button"
-          id="hidden"
-          style="margin-top: 30px; width: 150px"
+          class="submit-button migrate-button hidden"
+          style="margin-top: 15px; width: 150px"
         >
           Migrate
         </button>
+
+        <div class="user-created-msg hidden" style="margin-top: 15px; float: left">
+          <h3>Please check your Email - You should shortly receive an email asking you to activate your account.</h3>
+          <p>Please read the email carefully and follow the instructions on choosing a 1Password Master Password.</p>
+        </div>
+
+        <div class="account-migrated-msg hidden" style="margin-top: 15px; float: left">
+          <h3>Your account has been migrated.</h3>
+          <p>After you have read the email you should have received and activated your account, please click this button to finish the process and gain access to your 1Password account.</p>
+
+          <button
+            class="submit-button finish-button"
+            style="margin-top: 15px; width: 150px"
+          >
+            Finish
+          </button>
+
+        </div>
+
+        <div class="done-msg hidden" style="margin-top: 15px; float: left">
+          <h3>All done, Thanks!</h3>
+          <p>You should have received a final email from 1Password, and you can now log in to your account.</p>
+          <p>You may close this window.</p>
+        </div>
+
+        <div class="login-error-msg hidden" style="margin-top: 15px; float: left">
+          <h3>Please reload the page, double-check your email address and master password, and contact Dr. Watson if this does not solve the problem.</h3>
+        </div>
       </div>
     </section>
 <footer>

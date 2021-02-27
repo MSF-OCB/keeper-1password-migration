@@ -10,11 +10,20 @@ $flask run
 
 import unicodedata
 import os, re, time, subprocess
-from flask import Flask, Response, request, render_template
 from cryptography.hazmat.primitives import hashes
 from base64 import b64decode, b64encode
 
+from flask import Flask, Response, request, render_template
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 app = Flask(__name__)
+
+#need to stop sprays and dictionary attacks
+limiter = Limiter(
+    app,
+    key_func=get_remote_address
+)
 
 EMAIL_REGEX=re.compile("""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])""")
 
@@ -29,6 +38,8 @@ if not os.path.exists(TMPDIR): os.makedirs(TMPDIR)
 SHELL = os.getenv("KEEPER_1P_PASSWORD_SHELL");
 PYTHON = os.getenv("KEEPER_1P_PASSWORD_PYTHON");
 
+TEST_MODE = False
+
 @app.route('/')
 @app.route('/index.html')
 def index():
@@ -36,7 +47,7 @@ def index():
 
 def get_hash(inputs):
 
-    inputs.extend([time.time(), os.getrandom(32)])
+    inputs.extend([time.time(), os.urandom(32)])
 
     digest = hashes.Hash(hashes.SHA256())
 
@@ -71,13 +82,18 @@ def launch_process(username, password, operation) :
         "KEEPER_1P_OPERATION"               : b64encode(operation.encode("UTF-8"))
     }
     
-    pid = subprocess.Popen(args=[SHELL, "-c", "nohup "+PYTHON+" -u ./migrate_account.py > "+os.path.join(TMPDIR,output_file)], env=env_vars).pid
+    script = "./migrate_account.py"
+    
+    if TEST_MODE : script = "./fake_migration.py"
+    
+    pid = subprocess.Popen(args=[SHELL, "-c", "nohup "+PYTHON+" -u "+script+" > "+os.path.join(TMPDIR,output_file)], env=env_vars).pid
     
     print("pid="+str(pid))
     
     return output_file;
 
 @app.route('/login', methods=['POST'])
+@limiter.limit("50 per hour")
 def login_health():
 
     username=request.form.get('username')
@@ -91,6 +107,7 @@ def login_health():
     return Response(output_file_hash, status=200)
 
 @app.route('/migrate', methods=['POST'])
+@limiter.limit("50 per hour")
 def migrate_launch():
 
     username=request.form.get('username')
@@ -100,6 +117,20 @@ def migrate_launch():
         return Response("", status=400)
 
     output_file_hash = launch_process(username, password, "migrate_launch")
+    
+    return Response(output_file_hash, status=200)
+
+@app.route('/finish', methods=['POST'])
+@limiter.limit("50 per hour")
+def migrate_launch():
+
+    username=request.form.get('username')
+    password=request.form.get('password')
+
+    if not is_valid(username, password) :
+        return Response("", status=400)
+
+    output_file_hash = launch_process(username, password, "confirm_user")
     
     return Response(output_file_hash, status=200)
 

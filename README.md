@@ -1,16 +1,17 @@
 # keeper-1password-migration
 
-Dependencies: keepercommander, secure_delete
+Dependencies for running src/migrate_account.py on the commandline: keepercommander, secure_delete
+
+IMPORTANT: this tool cannot migrate credit cards! (There is no API to extract them from Keeper.)
 
 TODO: 
  - Shared folders (hoo boy)
- - TOTP migration
 
 Tentative plan:
  - convert into a Flask application
  - Workflow:
    - login with keeper credentials (email & master password) (with checkbox "I confirm I don't have 2FA enabled")
-   - health check (no credit cards, no totp)
+   - health check (logon)
    - migration (done using "provisioning admin" user of 1P)
 
 ```
@@ -55,7 +56,7 @@ Environment variables & defaults
 
 ```text
 KEEPER_SERVER       https://keepersecurity.eu/api/v2/
-OP_SERVER           my.1password.com
+OP_SERVER           msfocb.1password.eu
 OP_EXE              D:\\1password\\op.exe
 TMPDIR or TMP
 ```

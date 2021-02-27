@@ -1,12 +1,13 @@
-version: "3.8"
+version: "3.3"
 
 services:
   keeper_1password_migration:
-    image: docker.pkg.github.com/msf-ocb/keeper-1password-migration/migration-tool:deploy
+    #image: docker.pkg.github.com/msf-ocb/keeper-1password-migration/migration-tool:deploy
+    build: .
     env_file: 
       - ${MSFOCB_SECRETS_DIRECTORY}/keeper_1password_migration_variables
-    expose:
-     - 8080
+    ports:
+     - 8081:8081
     labels:
       - traefik.enable=true
       - traefik.http.routers.cred_relay.entrypoints=websecure
@@ -16,12 +17,12 @@ services:
       interval: 1m30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    networks:
-      - web
-      - default
+      #start_period: 40s
+#    networks:
+#      - web
+#      - default
     restart: unless-stopped
 
-networks:
-  web:
-    external: true
+#networks:
+#  web:
+#    external: true

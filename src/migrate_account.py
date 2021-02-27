@@ -2,7 +2,7 @@
 
 Does a one-shot migration from Keeper Enterprise into 1Password
 
-Does not do TOTP, credit cards, or any shared folders (yet)
+Does not do credit cards
 
 Environment variables & defaults
 
@@ -54,10 +54,6 @@ def process_folder_record(op_user, our_parents, record_uid) :
 
     r = api.get_record(kp_params, record_uid)
 
-    if(r.totp != None) : 
-        print("******************************* HASTOTP, not done yet")
-        print(str(r.totp))
-
     if not r.record_uid in credentials :
         oneP = {
             "fields": [
@@ -81,13 +77,24 @@ def process_folder_record(op_user, our_parents, record_uid) :
         
         name = 1;
 
-        if(r.custom_fields):
+        if(r.custom_fields or r.totp):
             oneP["sections"].append(
                 {
                     "title": "Custom fields",
                     "fields": []
                 }
             )
+
+            if(r.totp) : 
+            
+                oneP["sections"][0]["fields"].append({
+                    "k": "concealed",
+                    "n": "TOTP_"+str(name),
+                    "t": "one-time password",
+                    "v": r.totp
+                })
+                
+                name += 1
 
             for custom_field in r.custom_fields:
                 oneP["sections"][0]["fields"].append({
@@ -167,6 +174,35 @@ def exec_op(args, input_stdin=None, proc_timeout=15) :
     
     return outs.strip()
 
+def check_keeper_account_login(keeper_user, keeper_password) :
+
+    try:
+    
+        print("Trying to log into your account...")
+        print("If you see text asking for a 6-digit code, go back to Keeper")
+        print("and disable two-factor authentication, then try again")
+    
+        kp_params.login_v3 = False
+        kp_params.user = keeper_user
+        kp_params.password = keeper_password
+        kp_params.server = KEEPER_SERVER
+        kp_params.debug = True
+
+        api.sync_down(kp_params)
+        
+        print("Great! Ready to go...")
+        print("***ALL_CLEAR***")
+        
+    except:
+        print("*************************************")
+        print("!! Could not log into your account !!")
+        print("*************************************")
+        print()
+        print("Please make sure that you typed your email address and master password correctly.")
+        print()
+        print("If this still happens please contact IT support (Dr. Watson) ASAP.")
+        print()
+        print("***NO_LOGIN***")
 
 def migrate_keeper_1password_cmdline():
     
@@ -180,9 +216,7 @@ def migrate_keeper_1password_cmdline():
         op_pass           = getpass.getpass("1Password password: ")
     )
 
-def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate=None) :
-
-    if not op_user_to_migrate : op_user_to_migrate = op_user
+def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate) :
 
     print("Retrieving keeper logins for "+keeper_user+"...")
 
@@ -212,25 +246,27 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     
     if op_user != op_user_to_migrate :
     
-        print("Getting private vault ID for target user("+op_user_to_migrate+")...")
+        try:
+            
+            exec_op([OP_EXE, "get", "user", op_user_to_migrate, "--session", token])
+        
+        except:
+            
+            #user doesn't exist, so create them in 1P
+            
+            exec_op([OP_EXE, "create", "user", op_user_to_migrate, "", "--session", token])
+        
+            print("***USER_CREATED***")
+        
+        #print("Getting private vault ID for target user("+op_user_to_migrate+")...")
     
         vaults = json.loads(exec_op([OP_EXE, "list", "vaults", "--user="+op_user_to_migrate, "--session", token]))
-        
-        #TODO create user if necessary?
-        #TODO create user if necessary?
-        #TODO create user if necessary?
-        #TODO create user if necessary?
-        #TODO create user if necessary?
-        #TODO create user if necessary?
-        #TODO create user if necessary?
-        #TODO create user if necessary?
-        #TODO create user if necessary?
         
         vault = next((vault for vault in vaults if "Private Vault" in vault["name"]), None)
         
         if vault: vault_uid = vault["uuid"]
         
-        print("Private vault ID = "+str(vault_uid))
+        #print("Private vault ID = "+str(vault_uid))
 
     if(vault_uid) : current_items_args.extend(["--vault", vault_uid])
     
@@ -270,7 +306,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
             
                 upload_args = [OP_EXE, "create", "document", file_name, "--session", token]
                 
-                if(pword["tags"]): upload_args.extend(["--tags", ",".join(pword["tags"])]);            
+                if(pword["tags"]): upload_args.extend(["--tags", ",".join(pword["tags"])]);
 
                 if(vault_uid): upload_args.extend(["--vault", vault_uid])
                 
@@ -300,10 +336,38 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
         try:
             result = exec_op(create_args)
         except Exception as failure: 
-            print("Cant save "+json.dumps(to_encode)+", err="+str(failure))
+            print("*** ERROR: Can't save "+pword["title"]+", err="+str(failure))
            
         
-    print('***DONE***')
+    print("***ACCOUNT_MIGRATED***")
+
+def confirm_1password_user(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate=None) :
+
+    if not op_user_to_migrate : op_user_to_migrate = op_user
+
+    print("Just checking your (Keeper) username and password...")
+
+    kp_params.login_v3 = False
+    kp_params.user = keeper_user
+    kp_params.password = keeper_password
+    kp_params.server = KEEPER_SERVER
+    kp_params.debug = True
+
+    api.sync_down(kp_params)
+
+    print("Logging into 1Password (as provisioning user)...")
+    
+    shorthand = re.sub('[^a-zA-Z0-9]', '', op_user)
+
+    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand], op_pass)
+
+    print("Finalizing your account...")
+
+    exec_op([OP_EXE, "confirm", op_user_to_migrate, "--session", token])
+
+    print("Finished!")
+
+    print("***DONE***")
 
 def decode_env(var_name) : 
     return b64decode(os.getenv(var_name)).decode("UTF-8")
@@ -317,17 +381,12 @@ def main() :
     operation = decode_env("KEEPER_1P_OPERATION")
 
     if(operation == "login_health") :
-    
-        print("todo : login health check")
 
-#TODO
-#        check_keeper_account_migratability(
-#            keeper_user          = decode_env("KEEPER_1P_USERNAME"),
-#            keeper_password      = decode_env("KEEPER_1P_PASSWORD")
-#        )
-
-        print("***CLEAR***")
-    
+        check_keeper_account_login(
+            keeper_user          = decode_env("KEEPER_1P_USERNAME"),
+            keeper_password      = decode_env("KEEPER_1P_PASSWORD")
+        )
+        
     elif(operation == "migrate_launch") :
 
         migrate_keeper_user_to_1password(
@@ -338,6 +397,18 @@ def main() :
             op_pass              = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
             op_user_to_migrate   = decode_env("KEEPER_1P_USERNAME")
         )
+
+    elif(operation == "confirm_user") :
+
+        confirm_1password_user(
+            keeper_user          = decode_env("KEEPER_1P_USERNAME"),
+            keeper_password      = decode_env("KEEPER_1P_PASSWORD"),
+            op_user              = decode_env("KEEPER_1P_PROVISIONING_USER"),
+            op_key               = decode_env("KEEPER_1P_PROVISIONING_PASSWORD"),
+            op_pass              = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
+            op_user_to_migrate   = decode_env("KEEPER_1P_USERNAME")
+        )
+
 
 if __name__ == "__main__" :
     main()

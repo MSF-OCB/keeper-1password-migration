@@ -4,8 +4,12 @@
   const form = document.querySelector("#form");
   const dots = document.querySelectorAll(".dot");
   const migrationButton = document.querySelector(".migrate-button");
+  const finishButton = document.querySelector(".finish-button");
   const scrollContainer = document.querySelector(".scroll-container");
   const doneMsg = document.querySelector(".done-msg");
+  const loginErrorMsg = document.querySelector(".login-error-msg");
+  const userCreatedMsg = document.querySelector(".user-created-msg");
+  const accountMigratedMsg = document.querySelector(".account-migrated-msg");
   const url = "";
 
   function throw_nok(response) {
@@ -14,8 +18,9 @@
   }
 
   const login = async (e, endpoint) => {
-    if (endpoint === "migrate") migrationButton.setAttribute("id", "hidden");
-    let counter = endpoint === "login" ? 1 : 2;
+    if (endpoint === "migrate") migrationButton.classList.add("hidden");
+    if (endpoint === "confirm") confirmButton.classList.add("hidden");
+    let counter = ["dummy", "login", "migrate", "finish"].indexOf(endpoint);
     e.preventDefault();
 
     let urlencoded = new URLSearchParams();
@@ -46,15 +51,36 @@
   };
 
   const getConsole = async (token, endToken) => {
-    form.setAttribute("id", "hidden");
-    scrollContainer.removeAttribute("id", "hidden");
+    form.classList.add("hidden");
+    scrollContainer.classList.remove("hidden");
     // Auto scroll
     scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    if (endToken.includes("***CLEAR***")) {
-      return migrationButton.removeAttribute("id", "hidden");
+    if (endToken.includes("***ALL_CLEAR***")) {
+
+      return migrationButton.classList.remove("hidden");
+
+    } else if (endToken.includes("***NO_LOGIN***")) {
+
+      return loginErrorMsg.classList.remove("hidden");
+
+    } else if (endToken.includes("***USER_CREATED***")) {
+
+      return userCreatedMsg.classList.remove("hidden");
+
+    }else if (endToken.includes("***ACCOUNT_MIGRATED***")) {
+
+      userCreatedMsg.classList.add("hidden");
+
+      return accountMigratedMsg.classList.remove("hidden");
+
     } else if (endToken.includes("***DONE***")) {
-      return doneMsg.removeAttribute("id", "hidden");
+
+      accountMigratedMsg.classList.add("hidden");
+
+      return doneMsg.classList.remove("hidden");
+
     } else {
+
       return fetch(`${url}/console/${token}`, { method: "GET" })
         .then(throw_nok)
         .then((response) => response.text())
@@ -64,7 +90,6 @@
           scrollContainer.removeChild(scrollContainer.lastChild);
           scrollContainer.appendChild(newLine);
           setTimeout(() => getConsole(token, result), 1000);
-          //return getConsole(token, result);
         })
         .catch((error) => console.log("error", error));
     }
@@ -74,6 +99,9 @@
     form.addEventListener(`submit`, (e) => login(e, "login"));
   const migrateInit = () =>
     migrationButton.addEventListener(`click`, (e) => login(e, "migrate"));
+  const finishInit = () =>
+    finishButton.addEventListener(`click`, (e) => login(e, "finish"));
   loginInit();
   migrateInit();
+  finishInit();
 }

@@ -81,7 +81,7 @@ input {
   color: white;
 }
 
-#hidden {
+.hidden {
   display: none;
 }
 
