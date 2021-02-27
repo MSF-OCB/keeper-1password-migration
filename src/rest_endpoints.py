@@ -76,18 +76,20 @@ def launch_process(username, password, operation) :
         "KEEPER_1P_PROVISIONING_PASSWORD"   : os.getenv("KEEPER_1P_PROVISIONING_PASSWORD"),
         "KEEPER_1P_PROVISIONING_SECRETKEY"  : os.getenv("KEEPER_1P_PROVISIONING_SECRETKEY"),
         "KEEPER_1P_OP_EXE"                  : os.getenv("KEEPER_1P_OP_EXE"),
+        "KEEPER_1P_OP_CONFIG_DIR"           : os.getenv("KEEPER_1P_OP_CONFIG_DIR"),
         "KEEPER_1P_USERNAME"                : b64encode(username.encode("UTF-8")),
         "KEEPER_1P_PASSWORD"                : b64encode(password.encode("UTF-8")),
-        "KEEPER_1P_OPERATION"               : b64encode(operation.encode("UTF-8"))
+        "KEEPER_1P_OPERATION"               : b64encode(operation.encode("UTF-8")),
+        "OP_DEVICE"                         : os.getenv("OP_DEVICE")
     }
+    
+    #print("env_vars="+str(env_vars))
     
     script = "./migrate_account.py"
     
     if TEST_MODE : script = "./fake_migration.py"
     
-    pid = subprocess.Popen(args=[SHELL, "-c", "nohup "+PYTHON+" -u "+script+" > "+os.path.join(TMPDIR,output_file)], env=env_vars).pid
-    
-    print("pid="+str(pid))
+    subprocess.Popen(args=[SHELL, "-c", "nohup "+PYTHON+" -u "+script+" > "+os.path.join(TMPDIR,output_file)], env=env_vars)
     
     return output_file;
 

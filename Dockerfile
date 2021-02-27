@@ -15,6 +15,8 @@ RUN unzip -o -d op/ ./op/*.zip
 
 COPY src/ app/
 
+RUN mkdir op/config && chmod 700 op/config
+
 COPY bin/launch.sh launch.sh
 
 EXPOSE 8081

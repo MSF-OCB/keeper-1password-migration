@@ -42,9 +42,8 @@ OP_SERVER = os.getenv("ONEPASS_SERVER", default="msfocb.1password.eu")
 
 TMPDIR = os.path.join(os.getenv("TMP", os.getenv("TMPDIR", "/tmp")), "keepermigration", "downloads")
 
-CONFIG_DIR = os.path.join(os.getenv("TMP", os.getenv("TMPDIR", "/tmp")), "keepermigration", "config")
-
 OP_EXE = os.getenv("KEEPER_1P_OP_EXE", default="D:\\1password\\op.exe")
+OP_CONFIG_DIR = os.getenv("KEEPER_1P_OP_CONFIG_DIR")
 
 MIGRATE_SHARED = True
 
@@ -158,6 +157,9 @@ def process_folder(op_user, folder_uid, parents=[]) :
       process_folder(op_user, subfolder, our_parents )
 
 def exec_op(args, input_stdin=None, proc_timeout=15) :
+
+    if OP_CONFIG_DIR : args.extend(["--config", OP_CONFIG_DIR])
+
     proc = Popen(args, 
         stdin = subprocess.PIPE,
         stdout = subprocess.PIPE,
@@ -218,7 +220,7 @@ def migrate_keeper_1password_cmdline():
         op_pass           = getpass.getpass("1Password password: ")
     )
 
-def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate) :
+def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate=None) :
 
     print("Retrieving keeper logins for "+keeper_user+"...")
 
@@ -239,11 +241,8 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     print("Logging into 1Password (as provisioning user)...")
     
     shorthand = re.sub('[^a-zA-Z0-9]', '', op_user)
-
-    if not os.path.exists(CONFIG_DIR) : os.makedirs(CONFIG_DIR)
-
-
-    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand, "--config", CONFIG_DIR], op_pass)
+    
+    token = exec_op(args=[OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand], input_stdin=op_pass)
 
     current_items_args = [OP_EXE, "list", "items", "Login", "--session", token]
     
@@ -253,19 +252,19 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     
         try:
             
-            exec_op([OP_EXE, "get", "user", op_user_to_migrate, "--session", token])
+            exec_op(args=[OP_EXE, "get", "user", op_user_to_migrate, "--session", token])
         
         except:
             
             #user doesn't exist, so create them in 1P
             
-            exec_op([OP_EXE, "create", "user", op_user_to_migrate, "", "--session", token])
+            exec_op(args=[OP_EXE, "create", "user", op_user_to_migrate, "", "--session", token])
         
             print("***USER_CREATED***")
         
         #print("Getting private vault ID for target user("+op_user_to_migrate+")...")
     
-        vaults = json.loads(exec_op([OP_EXE, "list", "vaults", "--user="+op_user_to_migrate, "--session", token]))
+        vaults = json.loads(exec_op(args=[OP_EXE, "list", "vaults", "--user="+op_user_to_migrate, "--session", token]))
         
         vault = next((vault for vault in vaults if "Private Vault" in vault["name"]), None)
         
@@ -275,7 +274,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
 
     if(vault_uid) : current_items_args.extend(["--vault", vault_uid])
     
-    current_items = json.loads(exec_op(current_items_args))
+    current_items = json.loads(exec_op(args=current_items_args))
     
     def already_imported(login, pword) :
         return login["overview"]["title"] == pword["title"] \
@@ -315,7 +314,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
 
                 if(vault_uid): upload_args.extend(["--vault", vault_uid])
                 
-                uploaded_file = exec_op(upload_args)
+                uploaded_file = exec_op(args=upload_args)
                 
                 attachments["fields"].append(
                     {
@@ -328,7 +327,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
                 
                 name += 1
                 
-        encoded_entry = exec_op([OP_EXE, "encode", "--session", token], json.dumps(to_encode))
+        encoded_entry = exec_op(args=[OP_EXE, "encode", "--session", token], input_stdin=json.dumps(to_encode))
         
         create_args = [OP_EXE, "create", "item", "Login", encoded_entry, "--session", token, "--title", pword["title"]];
         
@@ -339,14 +338,14 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
         if(vault_uid): create_args.extend(["--vault", vault_uid])
         
         try:
-            result = exec_op(create_args)
+            result = exec_op(args=create_args)
         except Exception as failure: 
             print("*** ERROR: Can't save "+pword["title"]+", err="+str(failure))
            
         
     print("***ACCOUNT_MIGRATED***")
 
-def confirm_1password_user(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate=None) :
+def confirm_1password_user(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate) :
 
     if not op_user_to_migrate : op_user_to_migrate = op_user
 
@@ -364,11 +363,11 @@ def confirm_1password_user(keeper_user, keeper_password, op_user, op_pass, op_ke
     
     shorthand = re.sub('[^a-zA-Z0-9]', '', op_user)
 
-    token = exec_op([OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand], op_pass)
+    token = exec_op(args=[OP_EXE, "signin", OP_SERVER, op_user, op_key, "--raw", "--shorthand="+shorthand], input_stdin=op_pass)
 
     print("Finalizing your account...")
 
-    exec_op([OP_EXE, "confirm", op_user_to_migrate, "--session", token])
+    exec_op(args=[OP_EXE, "confirm", op_user_to_migrate, "--session", token])
 
     print("Finished!")
 
@@ -400,7 +399,7 @@ def main() :
             op_user              = decode_env("KEEPER_1P_PROVISIONING_USER"),
             op_key               = decode_env("KEEPER_1P_PROVISIONING_SECRETKEY"),
             op_pass              = decode_env("KEEPER_1P_PROVISIONING_PASSWORD"),
-            op_user_to_migrate   = decode_env("KEEPER_1P_USERNAME")
+            op_user_to_migrate   = decode_env("KEEPER_1P_USERNAME")           
         )
 
     elif(operation == "confirm_user") :
