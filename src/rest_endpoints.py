@@ -8,7 +8,6 @@ $set FLASK_APP=rest_endpoints.py
 $flask run
 '''
 
-import unicodedata
 import os, re, time, subprocess
 from cryptography.hazmat.primitives import hashes
 from base64 import b64decode, b64encode
