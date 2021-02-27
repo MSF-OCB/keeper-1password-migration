@@ -121,7 +121,7 @@ def migrate_launch():
 
 @app.route('/finish', methods=['POST'])
 @limiter.limit("50 per hour")
-def migrate_launch():
+def confirm_user():
 
     username=request.form.get('username')
     password=request.form.get('password')
