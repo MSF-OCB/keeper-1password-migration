@@ -63,11 +63,7 @@
 
       return loginErrorMsg.classList.remove("hidden");
 
-    } else if (endToken.includes("***USER_CREATED***")) {
-
-      return userCreatedMsg.classList.remove("hidden");
-
-    }else if (endToken.includes("***ACCOUNT_MIGRATED***")) {
+    } else if (endToken.includes("***ACCOUNT_MIGRATED***")) {
 
       userCreatedMsg.classList.add("hidden");
 
@@ -80,6 +76,11 @@
       return doneMsg.classList.remove("hidden");
 
     } else {
+
+      /* this message appears during the migration, not at the end of it */
+      if (endToken.includes("***USER_CREATED***")) {
+          userCreatedMsg.classList.remove("hidden");
+      }
 
       return fetch(`${url}/console/${token}`, { method: "GET" })
         .then(throw_nok)

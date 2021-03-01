@@ -173,8 +173,11 @@ def exec_op(args, input_stdin=None, proc_timeout=15) :
     except TimeoutExpired:
         raise Exception("Timeout on "+str(args)+", timeout="+timeout)
 
+    #prints that to stderr and I wish they wouldn't
     if(errs != ""):
-        raise Exception("Error on executing "+str(args)+": "+errs)
+        errs = errs.replace("Using configuration at non-standard location \""+OP_CONFIG_DIR+"\"", "").strip()
+        if(errs != ""):
+            raise Exception("Error on executing "+str(args)+": "+errs)
     
     return outs.strip()
 
@@ -258,7 +261,9 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
             
             #user doesn't exist, so create them in 1P
             
-            exec_op(args=[OP_EXE, "create", "user", op_user_to_migrate, "", "--session", token])
+            user_name = op_user_to_migrate[0:op_user_to_migrate.index("@")]
+             
+            exec_op(args=[OP_EXE, "create", "user", op_user_to_migrate, user_name, "--session", token])
         
             print("***USER_CREATED***")
         
