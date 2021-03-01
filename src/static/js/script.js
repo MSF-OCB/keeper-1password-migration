@@ -57,23 +57,31 @@
     scrollContainer.scrollTop = scrollContainer.scrollHeight;
     if (endToken.includes("***ALL_CLEAR***")) {
 
-      return migrationButton.classList.remove("hidden");
+      migrationButton.classList.remove("hidden");
+
+      return window.scrollTo(0,document.body.scrollHeight);
 
     } else if (endToken.includes("***NO_LOGIN***")) {
 
-      return loginErrorMsg.classList.remove("hidden");
+      loginErrorMsg.classList.remove("hidden");
+
+      return window.scrollTo(0,document.body.scrollHeight);
 
     } else if (endToken.includes("***ACCOUNT_MIGRATED***")) {
 
       userCreatedMsg.classList.add("hidden");
 
-      return accountMigratedMsg.classList.remove("hidden");
+      accountMigratedMsg.classList.remove("hidden");
+
+      return window.scrollTo(0,document.body.scrollHeight);
 
     } else if (endToken.includes("***DONE***")) {
 
       accountMigratedMsg.classList.add("hidden");
 
       return doneMsg.classList.remove("hidden");
+
+      return window.scrollTo(0,document.body.scrollHeight);
 
     } else {
 

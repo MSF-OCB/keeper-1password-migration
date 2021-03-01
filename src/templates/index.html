@@ -38,7 +38,7 @@
         </div>
         <div class="dots-container">
           <span class="dot">2</span>
-          <p>Account Check</p>
+          <p>Verify</p>
         </div>
         <div class="dots-container">
           <span class="dot">3</span>
@@ -103,7 +103,9 @@
 
         <div class="account-migrated-msg hidden" style="margin-top: 15px; float: left">
           <h3>Your account has been migrated.</h3>
-          <p>After you have read the email you should have received and activated your account, please click this button to finish the process and gain access to your 1Password account.</p>
+          <p>You should have received an email asking you to activate your account. Please read and follow those instructions.</p>
+
+          <p>After you have done that, please click this button to finish the process and gain access to your 1Password account.</p>
 
           <button
             class="submit-button finish-button"
@@ -125,11 +127,6 @@
         </div>
       </div>
     </section>
-<footer>
-  <div style='padding-left:20px'>
-      <img src="{{ url_for('static', filename='images/msflogo-trans-background.png') }}" alt="msfLogo" class="logo" />
-  </div>
-</footer>
     <script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
   </body>
 </html>

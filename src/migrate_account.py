@@ -174,7 +174,7 @@ def exec_op(args, input_stdin=None, proc_timeout=15) :
         raise Exception("Timeout on "+str(args)+", timeout="+timeout)
 
     #prints that to stderr and I wish they wouldn't
-    if(errs != ""):
+    if(errs):
         errs = errs.replace("Using configuration at non-standard location \""+OP_CONFIG_DIR+"\"", "").strip()
         if(errs != ""):
             raise Exception("Error on executing "+str(args)+": "+errs)
