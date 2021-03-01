@@ -9,7 +9,7 @@ RUN apk add libxml2-dev libxslt-dev unzip && \
     pip install uwsgi Flask==1.1.2 Flask-HTTPAuth==4.2.0 secure_delete Flask-Limiter \
     pip install keepercommander==4.61
 
-COPY op/*.zip op/
+RUN mkdir op && cd op && wget https://cache.agilebits.com/dist/1P/op/pkg/v1.8.0/op_linux_amd64_v1.8.0.zip
 
 RUN unzip -o -d op/ ./op/*.zip
 
