@@ -40,5 +40,5 @@ KEEPER_1P_PASSWORD_PYTHON=/usr/local/bin/python
 KEEPER_1P_PASSWORD_SHELL=/bin/bash
 ```
 
-The, after you run docker-compose up it will expose 8081, and if you have Traefik you can changfe the file yourself, then it will also expose it on the right domain. If you're running it locally you can replace `expose: 8081` with `ports: 8081:8081´.
+The, after you run docker-compose up it will expose 8081, and if you have Traefik and you can edit the file yourself, then it will also expose it on the right domain. If you're running it locally you can replace `expose: 8081` with `ports: 8081:8081`.
 
