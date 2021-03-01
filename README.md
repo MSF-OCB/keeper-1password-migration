@@ -7,7 +7,7 @@ IMPORTANT: this tool cannot migrate credit cards! (There is no API to extract th
 TODO: 
  - Shared folders (hoo boy)
 
-##Environment variables & their defaults for the command-line tool AND the docker version
+## Environment variables & their defaults for the command-line tool AND the docker version
 ```text
 KEEPER_SERVER       https://keepersecurity.eu/api/v2/
 OP_SERVER           msfocb.1password.eu
@@ -15,7 +15,7 @@ KEEPER_1P_OP_EXE    D:\\1password\\op.exe
 TMPDIR or TMP       /tmp
 ```
 
-##To run from the command line
+## To run from the command line
 
 ```text
 $python src/migrate_account.py
@@ -23,7 +23,7 @@ $python src/migrate_account.py
 
 It will ask you the rest of the info and migrate 1 account.
 
-##To run as a dockerised application for migrating multiple accounts
+## To run as a dockerised application for migrating multiple accounts
 
 It will also create the new user, and confirm it at the end.
 
