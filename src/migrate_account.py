@@ -51,7 +51,7 @@ kp_params = KeeperParams()
 
 credentials = {}
 
-def process_folder_record(op_user, our_parents, record_uid) :
+def process_folder_record(keeper_user, our_parents, record_uid) :
 
     r = api.get_record(kp_params, record_uid)
 
@@ -108,11 +108,13 @@ def process_folder_record(op_user, our_parents, record_uid) :
                 name += 1
    
         # ! important ! non-breaking spaces mess things up!
-        credentials[r.record_uid] = {"json": oneP, "title": r.title.replace("\xa0", " "), "url": r.login_url, "tags": []}
+        credentials[r.record_uid] = {"json": oneP, "title": r.title.replace("\xa0", " ")}
+        
+        if r.login_url : credentials[r.record_uid]["url"] = r.login_url
 
         if(r.attachments) :
 
-            dir = os.path.sep.join([TMPDIR, op_user, r.record_uid])
+            dir = os.path.sep.join([TMPDIR, keeper_user, r.record_uid])
 
             if not os.path.exists(dir): 
                 os.makedirs(dir)
@@ -127,18 +129,21 @@ def process_folder_record(op_user, our_parents, record_uid) :
 
             credentials[r.record_uid]["docs"] = dir
 
-    credentials[r.record_uid]["tags"].append("/".join(our_parents ))
+    if our_parents : 
+        if not "tags" in credentials[r.record_uid] :
+            credentials[r.record_uid]["tags"] = []
+        credentials[r.record_uid]["tags"].append("/".join(our_parents ))
 
 
-def process_folder_records(op_user, our_parents, folder_uid) :
+def process_folder_records(keeper_user, our_parents, folder_uid) :
 
     if not folder_uid in kp_params.subfolder_record_cache:
         return
 
     for record_uid in kp_params.subfolder_record_cache[folder_uid]:
-        process_folder_record(op_user, our_parents, record_uid)
+        process_folder_record(keeper_user, our_parents, record_uid)
 
-def process_folder(op_user, folder_uid, parents=[]) :
+def process_folder(keeper_user, folder_uid, parents=[]) :
 
     folder = kp_params.folder_cache[folder_uid];
 
@@ -151,10 +156,10 @@ def process_folder(op_user, folder_uid, parents=[]) :
 
     print("Processing "+folder.name)
     
-    process_folder_records(op_user, our_parents, folder_uid)
+    process_folder_records(keeper_user, our_parents, folder_uid)
     
     for subfolder in folder.subfolders: 
-      process_folder(op_user, subfolder, our_parents )
+      process_folder(keeper_user, subfolder, our_parents )
 
 def exec_op(args, input_stdin=None, proc_timeout=15) :
 
@@ -237,7 +242,11 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
    
     for uid, folder in kp_params.folder_cache.items() :
         if(folder.parent_uid == None):
-            process_folder(op_user, uid)
+            process_folder(keeper_user, uid)
+
+    ##these ones are in the root folder only
+    for record_uid in (record_uid for record_uid in kp_params.record_cache if record_uid not in credentials) :
+        process_folder_record(keeper_user, [], record_uid)
     
     print(str(len(credentials)) +" Passwords to migrate.")
 
@@ -283,9 +292,12 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     
     def already_imported(login, pword) :
         return login["overview"]["title"] == pword["title"] \
-          and pword["tags"][0] in login["overview"]["tags"] \
-          and (("url" in login["overview"] and pword["url"] == login["overview"]["url"]) or \
-                ("url" not in login["overview"] and pword["url"]==""))
+          and ("tags" in pword and pword["tags"][0] in login["overview"]["tags"]) \
+          and (
+                   ("url" not in login["overview"] and "url" not in pword)
+               or  ("url" in login["overview"] and "url" in pword \
+                    and pword["url"] == login["overview"]["url"])
+              )
 
     for uid, pword in credentials.items():
         
@@ -315,7 +327,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
             
                 upload_args = [OP_EXE, "create", "document", file_name, "--session", token]
                 
-                if(pword["tags"]): upload_args.extend(["--tags", ",".join(pword["tags"])]);
+                if("tags" in pword): upload_args.extend(["--tags", ",".join(pword["tags"])]);
 
                 if(vault_uid): upload_args.extend(["--vault", vault_uid])
                 
@@ -336,9 +348,9 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
         
         create_args = [OP_EXE, "create", "item", "Login", encoded_entry, "--session", token, "--title", pword["title"]];
         
-        if(pword["url"]): create_args.extend(["--url", pword["url"]]);
+        if("url" in pword): create_args.extend(["--url", pword["url"]]);
         
-        if(pword["tags"]): create_args.extend(["--tags", ",".join(pword["tags"])]);
+        if("tags" in pword): create_args.extend(["--tags", ",".join(pword["tags"])]);
         
         if(vault_uid): create_args.extend(["--vault", vault_uid])
         
