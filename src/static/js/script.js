@@ -20,7 +20,7 @@
 
   const login = async (e, endpoint) => {
     if (endpoint === "migrate") migrationButton.classList.add("hidden");
-    if (endpoint === "finish") finishButton.classList.add("hidden");
+    if (endpoint === "finish") accountMigratedMsg.classList.add("hidden");
     let counter = ["dummy", "login", "migrate", "finish"].indexOf(endpoint);
     e.preventDefault();
 
