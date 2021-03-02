@@ -13,7 +13,7 @@ services:
       - traefik.http.routers.cred_relay.entrypoints=websecure
       - traefik.http.routers.cred_relay.rule=Host(`password-migration.ocb.msf.org`)
     healthcheck:
-      test: ["CMD", "wget", "http://localhost:8080", "-O", "/dev/null"]
+      test: ["CMD", "wget", "http://localhost:8081", "-O", "/dev/null"]
       interval: 1m30s
       timeout: 10s
       retries: 3
