@@ -1,4 +1,4 @@
-FROM jfloff/alpine-python
+FROM jfloff/alpine-python:3.8
 
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
 
