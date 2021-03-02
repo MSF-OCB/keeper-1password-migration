@@ -25,6 +25,7 @@ jobs:
   redeploy_production:
     name: Redeploy in production
     runs-on: ubuntu-latest
+    steps:
       - name: Redeploys relay config in production
         uses: msf-ocb/nixos-deploy@master
         with:
