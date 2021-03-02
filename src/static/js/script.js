@@ -10,6 +10,7 @@
   const loginErrorMsg = document.querySelector(".login-error-msg");
   const userCreatedMsg = document.querySelector(".user-created-msg");
   const accountMigratedMsg = document.querySelector(".account-migrated-msg");
+  const activatedAccountCheck = document.querySelector("#checkbox2");
   const url = "";
 
   function throw_nok(response) {
@@ -110,7 +111,14 @@
     migrationButton.addEventListener(`click`, (e) => login(e, "migrate"));
   const finishInit = () =>
     finishButton.addEventListener(`click`, (e) => login(e, "finish"));
+  const checkInit = () =>
+    activatedAccountCheck.addEventListener(`click`, (e) => {
+      finishButton.classList.toggle("hidden")
+      window.scrollTo(0,document.body.scrollHeight);
+    });
+
   loginInit();
   migrateInit();
   finishInit();
+  checkInit();
 }

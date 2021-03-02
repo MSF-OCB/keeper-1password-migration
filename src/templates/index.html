@@ -53,17 +53,17 @@
         <div class="hidden scroll-container">
         </div>
         <form id="form" action="#">
-          <div style="text-align: left">
-            <label for="checkbox1"
+          <p class="checkboxcontainer">
+            <label class="checkboxlabel" for="checkbox1"
               ><input
                 type="checkbox"
                 id="checkbox1"
                 style="width: 30px"
                 required
               />
-              I have configured a master password and disabled Two-Factor Authentication in Keeper</label
+              Yes, I have configured a master password and disabled Two-Factor Authentication in Keeper</label
             >
-          </div>
+          </p>
           <input
             type="text"
             placeholder="Your MSF Email Address"
@@ -105,10 +105,21 @@
           <h3>Your account has been migrated.</h3>
           <p>You should have received an email asking you to activate your account. Please read and follow those instructions.</p>
 
-          <p>After you have done that, please click this button to finish the process and gain access to your 1Password account.</p>
+          <p>Please confirm that you have done this and then click 'finish' to end the process and gain access to your 1Password account.</p>
+
+            <p class="checkboxcontainer"><label class="checkboxlabel" for="checkbox2"
+              ><input
+                type="checkbox"
+                id="checkbox2"
+                style="width: 30px"
+                required
+              />
+              Yes, I have activated my account using the email I received from 1Password.</label
+            >
+          </p>
 
           <button
-            class="submit-button finish-button"
+            class="submit-button finish-button hidden"
             style="margin-top: 15px; width: 150px"
           >
             Finish
