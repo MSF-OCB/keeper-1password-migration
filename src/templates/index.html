@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Keeper Migration</title>
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="{{ url_for('static', filename='images/favicon-16x16.png') }}"
+    />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+
+  <body>
+    <div class="header">
+      <img
+        src="{{ url_for('static', filename='images/msflogo-trans-background.png') }}"
+        alt="msfLogo"
+        class="logo"
+      />
+      <h2>Keeper-to-1Password Migration Tool</h2>
+    </div>
+    <section>
+      <div>
+<p>Keeper has drastically changed its conditions of use. In order to guarantee operational continuity, MSF must migrate to another password management solution: 1Password.</p>
+
+<p><strong>You are the only person who has access to your Keeper vault and the data it contains.</strong><p>
+
+<p><strong>You need to migrate your data by using the below tool &mdash; <u>no one else can do it for you!</u></strong><p>
+
+      </div>
+      <div class="dots">
+        <div class="dots-container">
+          <span class="dot" id='in-progress'>1</span>
+          <p>Login</p>
+        </div>
+        <div class="dots-container">
+          <span class="dot">2</span>
+          <p>Verify</p>
+        </div>
+        <div class="dots-container">
+          <span class="dot">3</span>
+          <p>Migrate</p>
+        </div>
+        <div class="dots-container">
+          <span class="dot">4</span>
+          <p>Finish</p>
+        </div>
+      </div>
+      <div class="form-container">
+        <div class="hidden scroll-container">
+        </div>
+        <form id="form" action="#">
+          <p class="checkboxcontainer">
+            <label class="checkboxlabel" for="checkbox1"
+              ><input
+                type="checkbox"
+                id="checkbox1"
+                style="width: 30px"
+                required
+              />
+              Yes, I have configured a master password and disabled Two-Factor Authentication in Keeper</label
+            >
+          </p>
+          <input
+            type="text"
+            placeholder="Your MSF Email Address"
+            id="usernameInput"
+            name="kuser"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Keeper Master Password"
+            id="passwordInput"
+            name="lname"
+            required
+          />
+          <div>
+            <button
+              class="submit-button"
+              id="login-button"
+              style="float: right"
+            >
+              Login
+            </button>
+          </div>
+        </form>
+
+        <button
+          class="submit-button migrate-button hidden"
+          style="margin-top: 15px; width: 150px"
+        >
+          Migrate
+        </button>
+
+        <div class="user-created-msg hidden" style="margin-top: 15px; float: left">
+          <h3>Please check your Email - You should shortly receive an email asking you to activate your account.</h3>
+          <p>Please read the email carefully and follow the instructions on choosing a 1Password Master Password.</p>
+        </div>
+
+        <div class="account-migrated-msg hidden" style="margin-top: 15px; float: left">
+          <h3>Your account has been migrated.</h3>
+          <p>You should have received an email asking you to activate your account. Please read and follow those instructions.</p>
+
+          <p>Please confirm that you have done this and then click 'finish' to end the process and gain access to your 1Password account.</p>
+
+            <p class="checkboxcontainer"><label class="checkboxlabel" for="checkbox2"
+              ><input
+                type="checkbox"
+                id="checkbox2"
+                style="width: 30px"
+                required
+              />
+              Yes, I have activated my account using the email I received from 1Password.</label
+            >
+          </p>
+
+          <button
+            class="submit-button finish-button hidden"
+            style="margin-top: 15px; width: 150px"
+          >
+            Finish
+          </button>
+
+        </div>
+
+        <div class="done-msg hidden" style="margin-top: 15px; float: left">
+          <h3>All done, Thanks!</h3>
+          <p>You should have received a final email from 1Password, and you can now log in to your account.</p>
+          <p>You may close this window.</p>
+        </div>
+
+        <div class="login-error-msg hidden" style="margin-top: 15px; float: left">
+          <h3>Please reload the page, double-check your email address and master password, and contact Dr. Watson if this does not solve the problem.</h3>
+        </div>
+      </div>
+    </section>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>
