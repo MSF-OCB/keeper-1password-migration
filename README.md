@@ -29,6 +29,8 @@ It will also create the new user, and confirm it at the end.
 
 Add this file at `${MSFOCB_SECRETS_DIRECTORY}/keeper_1password_migration_variables.` This file is *extremely sensitive*.
 
+The provisioning user muse to be in the groups "Provision Manager" AND "Administrator".
+
 ```text
 KEEPER_1P_PROVISIONING_PASSWORD=<base64 encoded password for 1Password provisioning user>
 KEEPER_1P_PROVISIONING_SECRETKEY=<base64 encoded secret key for 1Password provisioning user>
