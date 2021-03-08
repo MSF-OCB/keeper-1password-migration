@@ -292,7 +292,7 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
     
     def already_imported(login, pword) :
         return login["overview"]["title"] == pword["title"] \
-          and ("tags" in pword and pword["tags"][0] in login["overview"]["tags"]) \
+          and ("tags" in pword and "tags" in login["overview"] and pword["tags"][0] in login["overview"]["tags"]) \
           and (
                    ("url" not in login["overview"] and "url" not in pword)
                or  ("url" in login["overview"] and "url" in pword \
