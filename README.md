@@ -32,7 +32,7 @@ Add this file at `${MSFOCB_SECRETS_DIRECTORY}/keeper_1password_migration_variabl
 ```text
 KEEPER_1P_PROVISIONING_PASSWORD=<base64 encoded password for 1Password provisioning user>
 KEEPER_1P_PROVISIONING_SECRETKEY=<base64 encoded secret key for 1Password provisioning user>
-KEEPER_1P_PROVISIONING_USER= <base64 encoded user for 1Password>
+KEEPER_1P_PROVISIONING_USER= <base64 encoded provisioning  user for 1Password>
 OP_DEVICE= <device ID for 1password account> (the first time you run the tool it will spit this out & tell you to run EXPORT - put it here instead
 KEEPER_1P_OP_EXE=/op/op
 KEEPER_1P_OP_CONFIG_DIR=/op/config
