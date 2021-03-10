@@ -180,7 +180,8 @@ def exec_op(args, input_stdin=None, proc_timeout=15) :
 
     #prints that to stderr and I wish they wouldn't
     if(errs):
-        errs = errs.replace("Using configuration at non-standard location \""+OP_CONFIG_DIR+"\"", "").strip()
+        if(OP_CONFIG_DIR) : 
+            errs = errs.replace("Using configuration at non-standard location \""+OP_CONFIG_DIR+"\"", "").strip()
         if(errs != ""):
             raise Exception("Error on executing "+str(args)+": "+errs)
     
@@ -229,6 +230,9 @@ def migrate_keeper_1password_cmdline():
     )
 
 def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_pass, op_key, op_user_to_migrate=None) :
+
+    if not op_user_to_migrate : 
+        op_user_to_migrate = op_user
 
     print("Retrieving keeper logins for "+keeper_user+"...")
 
@@ -279,6 +283,8 @@ def migrate_keeper_user_to_1password(keeper_user, keeper_password, op_user, op_p
         #print("Getting private vault ID for target user("+op_user_to_migrate+")...")
     
         vaults = json.loads(exec_op(args=[OP_EXE, "list", "vaults", "--user="+op_user_to_migrate, "--session", token]))
+        
+        print("vaults="+json.dumps(vaults))
         
         vault = next((vault for vault in vaults if "Private Vault" in vault["name"]), None)
         
